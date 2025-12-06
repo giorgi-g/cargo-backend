@@ -1,0 +1,1866 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+directive @upper on FIELD_DEFINITION
+
+type AuthResponse {
+  token: String!
+  user: UserEntity!
+}
+
+enum BillingInterval {
+  ANNUAL
+  MONTHLY
+  QUARTERLY
+}
+
+enum BookingStatus {
+  CANCELLED
+  COMPLETED
+  CONFIRMED
+  EXPIRED
+  FAILED
+  IN_PROGRESS
+  NO_SHOW
+  PAID
+  PENDING
+  REFUNDED
+}
+
+enum BusinessType {
+  B_CORP
+  CLOSE_CORPORATION
+  C_CORP
+  GENERAL_PARTNERSHIP
+  HOLDING_COMPANY
+  JOINT_VENTURE
+  LIMITED_LIABILITY_COMPANY
+  LIMITED_LIABILITY_PARTNERSHIP
+  LIMITED_PARTNERSHIP
+  NONPROFIT_CORPORATION
+  OTHER
+  PRIVATE_COMPANY
+  PUBLIC_COMPANY
+  SOLE_PROPRIETORSHIP
+  STATE_OWNED_ENTERPRISE
+  SUBSIDIARY_COMPANY
+  S_CORP
+}
+
+enum CarInteriorMaterial {
+  ALCANTARA
+  CARBON_FIBER_TRIM
+  GENUINE_LEATHER
+  METAL_TRIM
+  MICROFIBER
+  ORGANIC_TEXTILES
+  OTHER
+  RECYCLED_MATERIALS
+  SUEDE
+  SYNTHETIC_LEATHER
+  VEGAN_LEATHER
+}
+
+type CompanyEntity {
+  address: String!
+  companySubscriptions: [CompanySubscriptionEntity!]!
+  companyType: BusinessType!
+  country: CountryEntity!
+  countryId: Int!
+  createdAt: DateTime!
+  createdBy: String
+  details: String!
+  email: String!
+  files: [FileEntity!]!
+  id: String!
+  name: String!
+  orders: [OrderEntity!]!
+  packages: [PackageEntity!]!
+  pages: [PageEntity!]!
+  phone: String!
+  transports: [TransportEntity!]!
+  updatedAt: DateTime!
+  updatedBy: String
+  users: [UserEntity!]!
+}
+
+type CompanySubscriptionEntity {
+  cancelAt: DateTime
+  canceledAt: DateTime
+  company: CompanyEntity!
+  companyId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  currentPeriodEnd: DateTime!
+  currentPeriodStart: DateTime!
+  details: String!
+  discount: Float!
+  id: String!
+  interval: BillingInterval!
+  notes: String
+  plan: MembershipPlanEntity!
+  planId: String!
+  price: Float!
+  renewsAt: DateTime
+  status: SubscriptionStatus!
+  totalPerPeriodPrice: Float!
+  trialEndsAt: DateTime
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+input ContentCompanyIdLangIdSlugUniqueInputDto {
+  companyId: String!
+  langId: Int!
+  slug: String!
+}
+
+type ContentDetailsDto {
+  additionalPhoneNumber: String
+  address: String
+  cancellationPolicy: String
+  checkInFrom: String
+  checkOutUntil: String
+  childrenAllowed: Boolean
+  email: String
+  mealPlan: String
+  petsAllowed: Boolean
+  phoneNumber: String
+  postalCode: String
+  propertyType: String
+  ratePolicy: String
+  smokingAllowed: Boolean
+}
+
+input ContentDetailsInput {
+  additionalPhoneNumber: String
+  address: String
+  cancellationPolicy: String
+  checkInFrom: String
+  checkOutUntil: String
+  childrenAllowed: Boolean
+  email: String
+  mealPlan: String
+  petsAllowed: Boolean
+  phoneNumber: String
+  postalCode: String
+  propertyType: String
+  ratePolicy: String
+  smokingAllowed: Boolean
+}
+
+type ContentDto {
+  Order: [OrderEntity!]!
+  amenities: String!
+  backgroundId: String
+  backgroundImage: FileEntity
+  cityId: Int!
+  companyId: String!
+  contentFiles: [ContentFilesEntity!]!
+  contentType: ContentType!
+  countryId: Int!
+  coverId: String
+  coverImage: FileEntity
+  createdAt: DateTime!
+  createdBy: String!
+  description: String
+  details: ContentDetailsDto!
+  endDate: DateTime
+  id: String!
+  imageId: String
+  itemId: String!
+  langId: Int!
+  latitude: Float
+  longitude: Float
+  mainImage: FileEntity
+  maxSeats: Int!
+  metas: String!
+  packageArrivals: [PackageEntity!]!
+  packageContent: [PackageContentEntity!]!
+  packageDepartures: [PackageEntity!]!
+  packages: [PackageEntity!]!
+  pageContents: [PageContentsEntity!]!
+  prices: [PriceEntity!]!
+  regionId: Int!
+  slug: String
+  start: Int!
+  startDate: DateTime
+  status: ContentStatus!
+  text: String
+  title: String!
+  updatedAt: DateTime!
+  updatedBy: String!
+  views: Int!
+}
+
+type ContentEntity {
+  Order: [OrderEntity!]!
+  amenities: String!
+  backgroundId: String
+  backgroundImage: FileEntity
+  cityId: Int!
+  companyId: String!
+  contentFiles: [ContentFilesEntity!]!
+  contentType: ContentType!
+  countryId: Int!
+  coverId: String
+  coverImage: FileEntity
+  createdAt: DateTime!
+  createdBy: String!
+  description: String
+  details: String!
+  endDate: DateTime
+  id: String!
+  imageId: String
+  itemId: String!
+  langId: Int!
+  latitude: Float
+  longitude: Float
+  mainImage: FileEntity
+  maxSeats: Int!
+  metas: String!
+  packageArrivals: [PackageEntity!]!
+  packageContent: [PackageContentEntity!]!
+  packageDepartures: [PackageEntity!]!
+  packages: [PackageEntity!]!
+  pageContents: [PageContentsEntity!]!
+  prices: [PriceEntity!]!
+  regionId: Int!
+  slug: String
+  start: Int!
+  startDate: DateTime
+  status: ContentStatus!
+  text: String
+  title: String!
+  updatedAt: DateTime!
+  updatedBy: String!
+  views: Int!
+}
+
+type ContentFilesEntity {
+  content: ContentEntity!
+  contentId: String!
+  createdAt: DateTime!
+  file: FileEntity!
+  fileId: String!
+  updatedAt: DateTime!
+}
+
+input ContentFilesFileIdContentIdUniqueInputDto {
+  contentId: String!
+  fileId: String!
+}
+
+input ContentItemIdLangIdUniqueInputDto {
+  itemId: String!
+  langId: Int!
+}
+
+enum ContentStatus {
+  ACTIVE
+  DRAFT
+  INACTIVE
+  PENDING
+}
+
+enum ContentType {
+  ABOUT_US
+  ACCOMMODATION
+  BANNER
+  BRAND
+  CAFE
+  COMPANY
+  CONTACTS
+  DESTINATION
+  FAQ
+  FOOTER
+  GALLERY
+  HEADER
+  HOME
+  HOTEL
+  NEWS
+  PACKAGE
+  SERVICE
+  SLIDER
+  TEAM
+  TEXT
+  TOUR
+  TRANSFER
+  VACANCY
+}
+
+type CountryEntity {
+  capital: String!
+  code: String!
+  company: [CompanyEntity!]!
+  createdAt: DateTime!
+  currency: String!
+  currencyName: String!
+  currencySymbol: String!
+  emoji: String!
+  hasStates: Boolean!
+  id: Int!
+  iso3: String!
+  latitude: String!
+  longitude: String!
+  name: String!
+  native: String!
+  numericCode: String!
+  phoneCode: String!
+  region: String!
+  subRegion: String!
+  tld: String!
+  updatedAt: DateTime!
+}
+
+input CreateCompanyDto {
+  address: String!
+  companyType: BusinessType! = OTHER
+  countryId: Int!
+  email: String!
+  name: String!
+  phone: String!
+}
+
+input CreateContentInput {
+  amenities: [String!]!
+  cityId: Int!
+  contentType: ContentType!
+  countryId: Int!
+  description: String
+  details: ContentDetailsInput!
+  endDate: String
+  itemId: String!
+  langId: Int!
+  latitude: Float
+  longitude: Float
+  maxSeats: Int! = 0
+  regionId: Int!
+  slug: String
+  startDate: String
+  status: ContentStatus! = PENDING
+  text: String
+  title: String!
+}
+
+input CreateCountryDto {
+  capital: String!
+  code: String!
+  currency: String!
+  currencyName: String!
+  currencySymbol: String!
+  emoji: String!
+  hasStates: Boolean!
+  id: Int!
+  iso3: String!
+  latitude: String!
+  longitude: String!
+  name: String!
+  native: String!
+  numericCode: String!
+  phoneCode: String!
+  region: String!
+  subRegion: String!
+  tld: String!
+}
+
+input CreateCurrencyInput {
+  active: Boolean!
+  default: Boolean!
+  id: String!
+  name: String!
+  rate: Float!
+}
+
+input CreateFolderDto {
+  depth: Int! = 0
+  lft: Int! = 0
+  name: String!
+  rgt: Int! = 0
+}
+
+input CreateLanguageDto {
+  abbr: String!
+  active: Boolean! = true
+  default: Boolean = false
+  locale: String!
+  name: String!
+  native: String!
+}
+
+input CreateLicenseInput {
+  backImageId: String
+  fileId: String
+  frontImageId: String
+  name: String!
+  number: String!
+  type: [DriverLicenseType!]! = []
+  validUntil: String!
+}
+
+input CreateOrderDto {
+  currencyId: String!
+  notes: String
+  paymentMethod: PaymentMethod
+  paymentRef: String
+  status: OrderStatus! = PENDING
+  userId: String!
+}
+
+input CreatePackageDto {
+  additionalProfit: Float
+  arrivalId: String!
+  contentId: String!
+  departureId: String!
+  driverId: String
+  endDate: String!
+  guideId: String
+  occupancy: Int!
+  priceId: String!
+  startDate: String!
+  status: BookingStatus! = IN_PROGRESS
+}
+
+input CreatePageDto {
+  backgroundId: String
+  coverId: String
+  description: String
+  imageId: String
+  langId: Int!
+  lft: Int! = 0
+  order: Int! = 1
+  pageId: String!
+  position: [Position!]! = [HIDDEN]
+  rgt: Int! = 0
+  slug: String
+  status: ContentStatus!
+  tags: String
+  template: String
+  text: String
+  title: String!
+  type: ContentType!
+}
+
+input CreateTransportInput {
+  airbags: Int
+  brand: TransportBrands!
+  color: TransportColor!
+  cylinders: Int
+  engineSize: Float!
+  features: [TransportFeature!]!
+  fileIds: [FileEntityInput!]! = []
+  fuelType: FuelType!
+  inspectionValidUntil: String!
+  insuranceValidUntil: String
+  interiorColor: TransportColor!
+  interiorMaterial: CarInteriorMaterial! = OTHER
+  isTurbo: Boolean! = false
+  licensePlate: String!
+  mileage: Float
+  model: String!
+  notes: String
+  pricePerDay: Float
+  pricePerKm: Float
+  seats: Int!
+  steeringWheelSide: SteeringWheelSide! = LEFT
+  transmission: TransmissionType!
+  type: TransportType!
+  userId: String
+  year: Int!
+}
+
+input CreateUserInput {
+  backImageId: String
+  birthday: String!
+  companyId: String!
+  email: String!
+  firstName: String!
+  frontImageId: String
+  imageId: String
+  lastName: String!
+  middleName: String
+  passportNumber: String
+  password: String!
+  personalId: String
+  role: Role! = GUEST
+  status: UserStatus! = PENDING
+  statusReason: String
+}
+
+type CurrencyEntity {
+  Order: [OrderEntity!]!
+  active: Boolean!
+  createdAt: DateTime!
+  createdBy: String!
+  default: Boolean!
+  id: String!
+  name: String!
+  price: [PriceEntity!]!
+  rate: Float!
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+type DashboardInfoDto {
+  accommodations: Int!
+  cafes: Int!
+  destinations: Int!
+  drivers: Int!
+  files: Int!
+  guides: Int!
+  tours: Int!
+  transfers: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum DriverLicenseType {
+  A
+  A1
+  A2
+  AM
+  ATPL
+  B
+  B1
+  BE
+  C
+  C1
+  C1E
+  CE
+  D
+  D1
+  D1E
+  DE
+  F
+  G
+  M
+  PPL
+  SAILOR
+  SPL
+  T
+}
+
+type FileEntity {
+  company: CompanyEntity!
+  companyId: String!
+  contentBackgroundImages: [ContentEntity!]!
+  contentCoverImages: [ContentEntity!]!
+  contentFiles: [ContentFilesEntity!]!
+  contentMainImages: [ContentEntity!]!
+  createdAt: DateTime!
+  extension: String!
+  folder: FolderEntity
+  folderId: Int
+  id: String!
+  key: String!
+  licenseBackImages: [LicenseEntity!]!
+  licenseFiles: [LicenseEntity!]!
+  licenseFrontImages: [LicenseEntity!]!
+  mime: String!
+  name: String!
+  passportBackImages: [UserEntity!]!
+  passportFrontImages: [UserEntity!]!
+  prices: [PriceFileEntity!]!
+  profileImage: [UserEntity!]!
+  size: String!
+  transportFiles: [TransportFilesEntity!]!
+  type: FileType!
+  url: String!
+  user: UserEntity!
+  userId: String!
+}
+
+input FileEntityInput {
+  id: String!
+}
+
+input FileInput {
+  companyId: String
+  companyIdList: [String!]
+  createdAt: DateTime
+  extension: String
+  extensionList: [String!]
+  folderId: Int
+  folderIdList: [Int!]
+  id: String
+  idList: [String!]
+  key: String
+  keyList: [String!]
+  mime: String
+  mimeList: [String!]
+  name: String
+  nameList: [String!]
+  page: Int!
+  size: Int!
+  type: FileType
+  typeList: [FileType!]
+  url: String
+  urlList: [String!]
+}
+
+type FileResponse {
+  content: [FileEntity!]!
+  page: Int!
+  size: Int!
+  totalItems: Int!
+  totalPages: Int!
+}
+
+enum FileType {
+  CSV
+  DOC
+  DOCX
+  GIF
+  JPG
+  MP3
+  MP4
+  PDF
+  PNG
+  PPT
+  PPTX
+  WAV
+  WEBP
+  XLS
+  XLSX
+}
+
+input FilterContentDto {
+  cityId: Int!
+  contentType: ContentType!
+  endDate: String
+  langId: Int!
+  pageIds: [Int!]
+  slug: String
+  startDate: String
+  statuses: [ContentStatus!]
+  title: String
+}
+
+input FolderCompanyIdParentIdNameUniqueInputDto {
+  companyId: String!
+  name: String!
+  parentId: Int!
+}
+
+type FolderEntity {
+  children: [FolderEntity!]!
+  companyId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  depth: Int!
+  files: [FileEntity!]!
+  id: Int!
+  lft: Int!
+  name: String!
+  parent: FolderEntity
+  parentId: Int
+  rgt: Int!
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+enum FuelType {
+  CNG
+  DIESEL
+  ELECTRIC
+  HYBRID
+  HYDROGEN
+  LPG
+  OTHER
+  PETROL
+}
+
+input GetUsersInput {
+  companyId: String!
+  email: String
+  id: String!
+  name: String!
+  passportNumber: String
+  personalId: String
+  roles: [Role!]! = []
+  statuses: [UserStatus!]! = []
+}
+
+type HealthDto {
+  message: String!
+  status: Float!
+}
+
+type LanguageEntity {
+  abbr: String!
+  active: Boolean!
+  default: Boolean
+  id: Int!
+  locale: String!
+  name: String!
+  native: String!
+}
+
+type LicenseEntity {
+  backImage: FileEntity
+  backImageId: String
+  createdAt: DateTime!
+  file: FileEntity
+  fileId: String
+  frontImage: FileEntity
+  frontImageId: String
+  id: String!
+  name: String!
+  number: String!
+  type: [DriverLicenseType!]!
+  updatedAt: DateTime!
+  user: UserEntity
+  userId: String
+  validUntil: DateTime!
+}
+
+enum MealType {
+  AI
+  A_LA_CARTE
+  BREAKFAST
+  FB
+  HB_WITH_DINNER
+  HB_WITH_LUNCH
+  NONE
+  TABLE_D_HOTE
+}
+
+type MembershipPlanEntity {
+  active: Boolean!
+  code: MembershipType!
+  companySubscriptions: [CompanySubscriptionEntity!]!
+  createdAt: DateTime!
+  createdBy: String!
+  description: String
+  details: String
+  discount: Float
+  features: String
+  id: String!
+  interval: BillingInterval!
+  name: String!
+  price: Float!
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+enum MembershipType {
+  CUSTOM
+  ENTERPRISE
+  FREE
+  PLUS
+  PRO
+  QUEUE
+  STARTER
+  ULTRA
+}
+
+type Mutation {
+  createCompany(request: CreateCompanyDto!): CompanyEntity!
+  createContent(request: CreateContentInput!): ContentEntity!
+  createCountry(request: CreateCountryDto!): CountryEntity!
+  createCurrency(request: CreateCurrencyInput!): CurrencyEntity!
+  createFolder(request: CreateFolderDto!): FolderEntity!
+  createLanguage(request: CreateLanguageDto!): LanguageEntity!
+  createLicense(input: CreateLicenseInput!, userId: String!): LicenseEntity!
+  createOrder(request: CreateOrderDto!): OrderEntity!
+  createPackage(request: CreatePackageDto!): PackageEntity!
+  createPage(request: CreatePageDto!): PageEntity!
+  createTransport(input: CreateTransportInput!, userId: String!): TransportEntity!
+  createUser(request: CreateUserInput!): UserDto!
+  deleteCompany(id: String!): CompanyEntity!
+  deleteContent(id: String!): ContentEntity!
+  deleteCurrency(id: String!): CurrencyEntity!
+  deleteFile(id: String!): FileEntity!
+  deleteFolder(id: Float!): FolderEntity!
+  deleteLanguage(id: Float!): LanguageEntity!
+  deleteOrder(id: String!): OrderEntity!
+  deletePackage(id: String!): PackageEntity!
+  deletePage(id: String!): PageEntity!
+  deleteUser(userId: String!): Boolean!
+  findLanguageById(id: Float!): LanguageEntity!
+  getDashboardInfo: DashboardInfoDto!
+  removeLicense(id: String!): LicenseEntity!
+  removeTransport(id: String!): TransportEntity!
+  update(id: Float!, request: UpdateLanguageDto!): LanguageEntity!
+  updateCompany(id: String!, request: UpdateCompanyDto!): CompanyEntity!
+  updateContent(id: String!, request: UpdateContentInput!): ContentEntity!
+  updateCountry(id: Float!, request: UpdateCountryDto!): CountryEntity!
+  updateCurrency(id: String!, request: CreateCurrencyInput!): CurrencyEntity!
+  updateFile(id: String!, request: UpdateFileDto!): FileEntity!
+  updateFolder(id: Float!, request: UpdateFolderDto!): FolderEntity!
+  updateLicense(id: String!, input: UpdateLicenseInput!): LicenseEntity!
+  updateOrder(id: String!, request: UpdateOrderDto!): OrderEntity!
+  updatePackage(id: String!, request: UpdatePackageDto!): PackageEntity!
+  updatePage(id: String!, request: UpdatePageDto!): PageEntity!
+  updateTransport(id: String!, input: UpdateTransportInput!): TransportEntity!
+  updateUser(request: UpdateUserInput!, userId: String!): UserDto!
+}
+
+type OrderEntity {
+  company: CompanyEntity!
+  companyId: String!
+  content: ContentEntity
+  contentId: String
+  createdAt: DateTime!
+  createdBy: String!
+  currency: CurrencyEntity!
+  currencyId: String!
+  discount: Float!
+  id: String!
+  notes: String
+  package: PackageEntity
+  packageId: String
+  paymentMethod: PaymentMethod
+  paymentRef: String
+  status: OrderStatus!
+  subtotal: Float!
+  tax: Float!
+  total: Float!
+  updatedAt: DateTime!
+  updatedBy: String!
+  user: UserEntity!
+  userId: String!
+}
+
+input OrderInput {
+  companyId: String
+  companyIdList: [String!]
+  createdAt: DateTime
+  createdBy: String
+  createdByList: [String!]
+  currencyId: String
+  currencyIdList: [String!]
+  discount: Float
+  discountList: [Float!]
+  id: String
+  idList: [String!]
+  notes: String
+  notesList: [String!]
+  page: Int!
+  paymentMethod: PaymentMethod
+  paymentMethodList: [PaymentMethod!]
+  paymentRef: String
+  paymentRefList: [String!]
+  size: Int!
+  status: OrderStatus
+  statusList: [OrderStatus!]
+  subtotal: Float
+  subtotalList: [Float!]
+  tax: Float
+  taxList: [Float!]
+  total: Float
+  totalList: [Float!]
+  updatedBy: String
+  updatedByList: [String!]
+  userId: String
+  userIdList: [String!]
+}
+
+type OrderResponse {
+  content: [OrderEntity!]!
+  page: Int!
+  size: Int!
+  totalItems: Int!
+  totalPages: Int!
+}
+
+enum OrderStatus {
+  AWAITING_PAYMENT
+  CANCELLED
+  FAILED
+  PAID
+  PARTIALLY_REFUNDED
+  PENDING
+  REFUNDED
+}
+
+type PackageContentEntity {
+  content: ContentEntity!
+  contentId: String!
+  createdAt: DateTime!
+  details: String!
+  package: PackageEntity!
+  packageId: String!
+  position: Int!
+  price: PriceEntity
+  priceId: String
+  quantity: Int!
+  unitCurrency: String!
+  unitPrice: Float!
+  updatedAt: DateTime!
+}
+
+input PackageContentPackageIdContentIdUniqueInputDto {
+  contentId: String!
+  packageId: String!
+}
+
+type PackageEntity {
+  Order: [OrderEntity!]!
+  User: UserEntity
+  additionalProfit: Float
+  arrival: ContentEntity!
+  arrivalId: String!
+  company: CompanyEntity!
+  companyId: String!
+  content: ContentEntity!
+  contentId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  departure: ContentEntity!
+  departureId: String!
+  driver: UserEntity
+  driverId: String
+  endDate: DateTime!
+  guide: UserEntity
+  guideId: String
+  id: String!
+  occupancy: Int!
+  packageContent: [PackageContentEntity!]!
+  packageReviews: [PackageReviewEntity!]!
+  price: PriceEntity!
+  priceId: String!
+  startDate: DateTime!
+  status: BookingStatus!
+  totalPrice: Float!
+  updatedAt: DateTime!
+  updatedBy: String!
+  userId: String
+}
+
+type PackageReviewEntity {
+  comment: String
+  createdAt: DateTime!
+  createdBy: String!
+  details: String!
+  id: String!
+  isApproved: Boolean!
+  isPublic: Boolean!
+  package: PackageEntity!
+  packageId: String!
+  rating: Float!
+  reviewer: UserEntity!
+  title: String
+  updatedAt: DateTime!
+  updatedBy: String!
+  userId: String!
+}
+
+input PackageReviewPackageIdUserIdUniqueInputDto {
+  packageId: String!
+  userId: String!
+}
+
+type PageContentsEntity {
+  content: ContentEntity!
+  contentId: String!
+  createdAt: DateTime!
+  page: PageEntity!
+  pageId: String!
+  updatedAt: DateTime!
+}
+
+input PageContentsPageIdContentIdUniqueInputDto {
+  contentId: String!
+  pageId: String!
+}
+
+type PageEntity {
+  backgroundId: String
+  children: [PageEntity!]!
+  company: CompanyEntity!
+  companyId: String!
+  coverId: String
+  createdAt: DateTime!
+  createdBy: String!
+  description: String
+  details: String!
+  id: String!
+  imageId: String
+  langId: Int!
+  lft: Int!
+  metas: String!
+  order: Int!
+  pageContents: [PageContentsEntity!]!
+  pageId: String!
+  parent: PageEntity
+  parentId: String
+  position: [Position!]!
+  rgt: Int!
+  slug: String
+  status: ContentStatus!
+  tags: String
+  template: String
+  text: String
+  title: String!
+  type: ContentType!
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+input PagePageIdLangIdUniqueInputDto {
+  langId: Int!
+  pageId: String!
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CARD
+  CASH
+  OTHER
+  WALLET
+}
+
+enum Position {
+  BOTTOM
+  FOOTER
+  HEADER
+  HIDDEN
+  MAIN
+  SIDEBAR
+  TOP
+}
+
+type PriceEntity {
+  PackageContent: [PackageContentEntity!]!
+  content: ContentEntity!
+  contentId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  currency: CurrencyEntity!
+  currencyId: String!
+  details: String!
+  endDate: DateTime
+  files: [PriceFileEntity!]!
+  id: String!
+  infantPrice: Float!
+  maxAdult: Int
+  mealType: MealType!
+  name: String
+  packages: [PackageEntity!]!
+  price: Float!
+  privacy: Boolean!
+  quantity: Int
+  roomType: RoomType!
+  sharing: TransferType!
+  startDate: DateTime
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+type PriceFileEntity {
+  createdAt: DateTime!
+  file: FileEntity!
+  fileId: String!
+  price: PriceEntity!
+  priceId: String!
+  updatedAt: DateTime!
+}
+
+input PriceFilePriceIdFileIdUniqueInputDto {
+  fileId: String!
+  priceId: String!
+}
+
+type Query {
+  check: HealthDto!
+  findContentById(id: String!, langId: Float!): ContentDto
+  findContents(request: FilterContentDto!): [ContentEntity!]!
+  findCountries: [CountryEntity!]!
+  findCountryById(id: Float!): CountryEntity!
+  findCurrencies: [CurrencyEntity!]!
+  findCurrencyById(id: String!): [CurrencyEntity!]!
+  findFileById(id: String!): [FileEntity!]!
+  findFiles(request: FileInput!): FileResponse!
+  findFolderById(id: Float!): FolderEntity!
+  findFolders: [FolderEntity!]!
+  findLanguages: [LanguageEntity!]!
+  findLicensesByUser(userId: String!): [LicenseEntity!]!
+  findOne(id: String!): LicenseEntity!
+  findOrder(id: String!): OrderEntity
+  findOrders(request: OrderInput!): OrderResponse!
+  findPackageById(id: String!): PackageEntity!
+  findPackages: [PackageEntity!]!
+  findPageById(id: String!): PageEntity!
+  findPages: [PageEntity!]!
+  findTransport(id: String!): TransportEntity!
+  findTransports(input: TransportInput!): [TransportEntity!]!
+  getCompanies: [CompanyEntity!]!
+  getCompanyById(id: String!): CompanyEntity!
+  getProfile: UserEntity!
+  getUser(userId: String!): UserDto!
+  getUsers(request: GetUsersInput!): [UserDto!]!
+  signIn(request: SignInDto!): AuthResponse!
+}
+
+enum Role {
+  ACCOUNTANT
+  ADMIN
+  CLIENT
+  DIRECTOR
+  DRIVER
+  GENERAL_MANAGER
+  GUEST
+  GUIDE
+  HR_MANAGER
+  RESERVATIONS_MANAGER
+  ROOT
+  SALES_MANAGER
+}
+
+enum RoomType {
+  ACCESSIBLE
+  ADJOINING
+  APARTMENT
+  BUNGALOW
+  BUSINESS
+  CONNECTING
+  DELUXE
+  DOUBLE
+  EXECUTIVE_SUITE
+  FAMILY
+  HONEYMOON_SUITE
+  JUNIOR_SUITE
+  KING
+  LOFT
+  MASTER_SUITE
+  NONE
+  PENTHOUSE_SUITE
+  PRESIDENTIAL_SUITE
+  QUAD
+  QUEEN
+  ROYAL_SUITE
+  SINGLE
+  STUDIO
+  SUPERIOR
+  TRIPLE
+  TWIN
+}
+
+input SignInDto {
+  email: String!
+  password: String!
+}
+
+enum SteeringWheelSide {
+  LEFT
+  RIGHT
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PAST_DUE
+  TRIALING
+}
+
+enum TransferType {
+  LUXURY
+  NONE
+  PRIVATE
+  SHARED
+}
+
+enum TransmissionType {
+  AUTOMATIC
+  CVT
+  MANUAL
+  OTHER
+  SEMI_AUTOMATIC
+}
+
+enum TransportBrands {
+  ACURA
+  AION
+  AIQAR
+  AIRBUS
+  AIRBUS_HELICOPTERS
+  AITO
+  ALFA_ROMEO
+  AMC
+  ARCFOX
+  ASTON_MARTIN
+  AUDI
+  AUTEL_ROBOTICS
+  AVATR
+  AZIMUT
+  BAYLINER
+  BC_FERRIES
+  BELL
+  BENETTI
+  BENTLEY
+  BMW
+  BOEING
+  BOMBARDIER
+  BOSTON_WHALER
+  BRILLIANCE
+  BUGATTI
+  BUICK
+  BYD
+  CADILLAC
+  CAMERON_BALLOONS
+  CAR
+  CARNIVAL_CRUISE
+  CHANGAN
+  CHANGFENG
+  CHAPARRAL
+  CHERY
+  CHEVROLET
+  CHRYSLER
+  CITROEN
+  COSCO
+  CPI
+  DACIA
+  DAEWOO
+  DAGGER
+  DAIHATSU
+  DAMEN_SHIPYARDS
+  DASSAULT_FALCON
+  DATSUN
+  DAYUN
+  DFI
+  DINGLING
+  DJI
+  DM_TELAI
+  DODGE
+  DONGFENG
+  DS_AUTOMOBILES
+  EMBRAER
+  EXEED
+  FAW
+  FERRARI
+  FERRETTI
+  FIAT
+  FISKER
+  FJORD1
+  FORD
+  FORTHING
+  FOTON
+  GAZ
+  GEELY
+  GENESIS
+  GMC
+  GONOW
+  GREAT_WALL
+  GRIFFON_HOVERWORK
+  GULFSTREAM
+  HAFEI
+  HAVAL
+  HIPHI
+  HONDA
+  HONGQI
+  HUAWEI
+  HUAWEI_INSIDE
+  HUMMER
+  HYSTER
+  HYUNDAI
+  IM_MOTORS
+  INCAT
+  INFINITI
+  IRAN_KHODRO
+  ISUZU
+  IVECO
+  IZH
+  JAC
+  JAGUAR
+  JEEP
+  JETOUR
+  KARSAN
+  KAWASAKI
+  KIA
+  KUBICEK_BALLOONS
+  LAMBORGHINI
+  LANCIA
+  LAND_ROVER
+  LEAPMOTOR
+  LEXUS
+  LIFAN
+  LINCOLN
+  LINDE
+  LIXIANG
+  LOCKHEED_MARTIN
+  LONKING
+  LOTUS
+  LTI
+  LYNK_AND_CO
+  MAD_RIVER
+  MAERSK
+  MAHINDRA
+  MASERATI
+  MAXUS
+  MAYBACH
+  MAZDA
+  MCLAREN
+  MERCEDES_BENZ
+  MERCURY
+  MG
+  MINI
+  MITSUBISHI
+  MITSUOKA
+  MOSKVICH
+  MPM
+  MSC
+  MSC_CRUISES
+  NEOTERIC
+  NETA
+  NIEWIADOW
+  NIO
+  NISSAN
+  NORWEGIAN_CRUISE
+  OLDSMOBILE
+  OLD_TOWN
+  OMODA
+  OPEL
+  OTHER
+  PARROT
+  PELICAN
+  PERCEPTION
+  PEUGEOT
+  POLESTAR
+  PONTIAC
+  PORSCHE
+  PRINCESS_YACHTS
+  PROTON
+  RENAULT
+  RENAULT_SAMSUNG
+  RIVIAN
+  ROEWE
+  ROLLS_ROYCE
+  ROVER
+  ROYAL_CARIBBEAN
+  SAAB
+  SALEEN
+  SATURN
+  SCHEMPP_HIRTH
+  SCHLEICHER
+  SCION
+  SEAT
+  SEA_DOO
+  SEA_RAY
+  SENA
+  SIKORSKY
+  SKODA
+  SKYWELL
+  SMART
+  SOUEAST
+  SSANGYONG
+  SUBARU
+  SUNSEEKER
+  SUZUKI
+  TATA
+  TESLA
+  TOYOTA
+  UAZ
+  VAUXHALL
+  VAZ
+  VOLKSWAGEN
+  VOLVO
+  VOYAH
+  WENONAH
+  WULING
+  XIAOMI
+  XINGTAI
+  XPENG
+  YAMAHA
+  YAMAHA_BOATS
+  YTO
+  YUANXIN_ENERGYS
+  ZAZ
+  ZEEKR
+  ZEPPELIN_NT
+  ZUKIDA
+  ZXAUTO
+}
+
+enum TransportColor {
+  BEIGE
+  BLACK
+  BLUE
+  BRONZE
+  BROWN
+  BURGUNDY
+  CHAMPAGNE
+  COPPER
+  GOLD
+  GRADIENT
+  GRAY
+  GREEN
+  LAVENDER
+  LILAC
+  MAGENTA
+  MAROON
+  MIDNIGHT_BLUE
+  NARDO_GRAY
+  ORANGE
+  OTHER
+  PINK
+  PURPLE
+  RED
+  ROSE_GOLD
+  SILVER
+  TEAL
+  TURQUOISE
+  WHITE
+  YELLOW
+}
+
+type TransportEntity {
+  airbags: Int
+  brand: TransportBrands!
+  color: TransportColor!
+  company: CompanyEntity!
+  companyId: String!
+  createdAt: DateTime!
+  cylinders: Int
+  engineSize: Float!
+  features: [TransportFeature!]!
+  fuelType: FuelType!
+  id: String!
+  inspectionValidUntil: DateTime!
+  insuranceValidUntil: DateTime
+  interiorColor: TransportColor!
+  interiorMaterial: CarInteriorMaterial!
+  isTurbo: Boolean!
+  licensePlate: String!
+  mileage: Float
+  model: String!
+  notes: String
+  pricePerDay: Float
+  pricePerKm: Float
+  seats: Int!
+  steeringWheelSide: SteeringWheelSide!
+  transmission: TransmissionType!
+  transportFiles: [TransportFilesEntity!]!
+  type: TransportType!
+  updatedAt: DateTime!
+  user: UserEntity
+  userId: String
+  year: Int!
+}
+
+enum TransportFeature {
+  ABS
+  ADAPTIVE_CRUISE_CONTROL
+  ADAPTIVE_SUSPENSION
+  AIR_CONDITIONING
+  ALL_WHEEL_DRIVE
+  AMBIENT_INTERIOR_LIGHTING
+  ANDROID_AUTO
+  ANTI_THEFT_SYSTEM
+  APPLE_CAR_PLAY
+  AUTOMATIC_EMERGENCY_BRAKING
+  BABY_SEAT_AVAILABLE
+  BATTERY_PRECONDITIONING
+  BLIND_SPOT_MONITORING
+  BLUETOOTH
+  CAMERA_360
+  CARGO_ORGANIZER
+  COLLISION_AVOIDANCE_SYSTEM
+  CURTAIN_AIRBAGS
+  DIGITAL_INSTRUMENT_CLUSTER
+  DUAL_ZONE_CLIMATE_CONTROL
+  ECO_MODE
+  EV_FAST_CHARGING
+  EXTRA_LUGGAGE_STORAGE
+  FOLDING_REAR_SEATS
+  FOUR_WHEEL_DRIVE
+  FRONT_AIRBAGS
+  GPS_NAVIGATION
+  HANDS_FREE_TRUNK_ACCESS
+  HEADS_UP_DISPLAY
+  HEATED_SEATS
+  HILL_DESCENT_CONTROL
+  HILL_START_ASSIST
+  INTERIOR_AIR_PURIFIER
+  KEYLESS_ENTRY
+  LANE_DEPARTURE_WARNING
+  LANE_KEEP_ASSIST
+  LEATHER_SEATS
+  MASSAGE_SEATS
+  MEMORY_SEATS
+  MINI_FRIDGE
+  NOISE_INSULATION_PACKAGE
+  OFF_ROAD_PACKAGE
+  PADDLE_SHIFTERS
+  PANORAMIC_ROOF
+  PARKING_SENSORS
+  PET_FRIENDLY_PACKAGE
+  POWER_ADJUSTABLE_SEATS
+  POWER_TAILGATE
+  PREMIUM_SOUND_SYSTEM
+  PUSH_BUTTON_START
+  REARVIEW_CAMERA
+  REAR_ENTERTAINMENT_SYSTEM
+  REAR_WINDOW_SUNSHADES
+  REGENERATIVE_BRAKING
+  REMOTE_START
+  ROOF_RACK
+  SIDE_AIRBAGS
+  SMART_GLASS
+  SOLAR_ROOF
+  SPORT_MODE
+  SUNROOF
+  THIRD_ROW_SEATING
+  USB_PORTS
+  VENTILATED_SEATS
+  WIFI_HOTSPOT
+  WIRELESS_PHONE_CHARGING
+}
+
+type TransportFilesEntity {
+  createdAt: DateTime!
+  file: FileEntity!
+  fileId: String!
+  transport: TransportEntity!
+  transportId: String!
+  updatedAt: DateTime!
+}
+
+input TransportFilesFileIdTransportIdUniqueInputDto {
+  fileId: String!
+  transportId: String!
+}
+
+input TransportInput {
+  airbags: Int
+  airbagsList: [Int!]
+  brand: TransportBrands
+  brandList: [TransportBrands!]
+  color: TransportColor
+  colorList: [TransportColor!]
+  companyId: String
+  companyIdList: [String!]
+  createdAt: DateTime
+  cylinders: Int
+  cylindersList: [Int!]
+  engineSize: Float
+  engineSizeList: [Float!]
+  features: [TransportFeature!]
+  featuresList: [TransportFeature!]
+  fuelType: FuelType
+  fuelTypeList: [FuelType!]
+  id: String
+  idList: [String!]
+  inspectionValidUntil: DateTime
+  insuranceValidUntil: DateTime
+  interiorColor: TransportColor
+  interiorColorList: [TransportColor!]
+  interiorMaterial: CarInteriorMaterial
+  interiorMaterialList: [CarInteriorMaterial!]
+  isTurbo: Boolean
+  isTurboList: [Boolean!]
+  licensePlate: String
+  licensePlateList: [String!]
+  mileage: Float
+  mileageList: [Float!]
+  model: String
+  modelList: [String!]
+  notes: String
+  notesList: [String!]
+  page: Int!
+  pricePerDay: Float
+  pricePerDayList: [Float!]
+  pricePerKm: Float
+  pricePerKmList: [Float!]
+  seats: Int
+  seatsList: [Int!]
+  size: Int!
+  steeringWheelSide: SteeringWheelSide
+  steeringWheelSideList: [SteeringWheelSide!]
+  transmission: TransmissionType
+  transmissionList: [TransmissionType!]
+  type: TransportType
+  typeList: [TransportType!]
+  userId: String
+  userIdList: [String!]
+  year: Int
+  yearList: [Int!]
+}
+
+enum TransportType {
+  AIRSHIP
+  ATV
+  BICYCLE
+  BOAT
+  BUS
+  CAMEL_CARAVAN
+  CANOE
+  CONVERTIBLE
+  COUPE
+  DIRT_BIKE
+  DOG_SLED
+  DRONE
+  FERRY
+  GLIDER
+  HATCHBACK
+  HELICOPTER
+  HORSE_CARRIAGE
+  HOT_AIR_BALLOON
+  HOVERCRAFT
+  JET_SKI
+  KAYAK
+  LIMOUSINE
+  MINIVAN
+  MOTORCYCLE
+  OFFROAD
+  OTHER
+  PICKUP
+  PLANE
+  PRIVATE_JET
+  RICKSHAW
+  SCOOTER
+  SEDAN
+  SHIP
+  SKI_LIFT
+  SNOWMOBILE
+  SUBMARINE
+  SUV
+  VAN
+  WAGON
+  YACHT
+}
+
+input UpdateCompanyDto {
+  address: String!
+  companyType: BusinessType! = OTHER
+  countryId: Int!
+  email: String!
+  name: String!
+  phone: String!
+}
+
+input UpdateContentInput {
+  amenities: [String!]!
+  cityId: Int!
+  contentType: ContentType!
+  countryId: Int!
+  description: String
+  details: ContentDetailsInput!
+  endDate: String
+  itemId: String!
+  langId: Int!
+  latitude: Float
+  longitude: Float
+  maxSeats: Int! = 0
+  regionId: Int!
+  slug: String
+  startDate: String
+  status: ContentStatus! = PENDING
+  text: String
+  title: String!
+}
+
+input UpdateCountryDto {
+  capital: String!
+  code: String!
+  currency: String!
+  currencyName: String!
+  currencySymbol: String!
+  emoji: String!
+  hasStates: Boolean!
+  iso3: String!
+  latitude: String!
+  longitude: String!
+  name: String!
+  native: String!
+  numericCode: String!
+  phoneCode: String!
+  region: String!
+  subRegion: String!
+  tld: String!
+}
+
+input UpdateFileDto {
+  extension: String!
+  folderId: Int
+  mime: String!
+  name: String!
+  size: String!
+  type: FileType!
+}
+
+input UpdateFolderDto {
+  depth: Int! = 0
+  lft: Int! = 0
+  name: String!
+  rgt: Int! = 0
+}
+
+input UpdateLanguageDto {
+  abbr: String!
+  active: Boolean! = true
+  default: Boolean = false
+  locale: String!
+  name: String!
+  native: String!
+}
+
+input UpdateLicenseInput {
+  backImageId: String
+  fileId: String
+  frontImageId: String
+  name: String!
+  number: String!
+  type: [DriverLicenseType!]! = []
+  validUntil: String!
+}
+
+input UpdateOrderDto {
+  currencyId: String!
+  notes: String
+  paymentMethod: PaymentMethod
+  paymentRef: String
+  status: OrderStatus! = PENDING
+  userId: String!
+}
+
+input UpdatePackageDto {
+  additionalProfit: Float
+  arrivalId: String!
+  contentId: String!
+  departureId: String!
+  driverId: String
+  endDate: String!
+  guideId: String
+  occupancy: Int!
+  priceId: String!
+  startDate: String!
+  status: BookingStatus! = IN_PROGRESS
+}
+
+input UpdatePageDto {
+  backgroundId: String
+  coverId: String
+  description: String
+  imageId: String
+  langId: Int!
+  lft: Int! = 0
+  order: Int! = 1
+  pageId: String!
+  position: [Position!]! = [HIDDEN]
+  rgt: Int! = 0
+  slug: String
+  status: ContentStatus!
+  tags: String
+  template: String
+  text: String
+  title: String!
+  type: ContentType!
+}
+
+input UpdateTransportInput {
+  airbags: Int
+  brand: TransportBrands!
+  color: TransportColor!
+  cylinders: Int
+  engineSize: Float!
+  features: [TransportFeature!]!
+  fileIds: [FileEntityInput!]! = []
+  fuelType: FuelType!
+  inspectionValidUntil: String!
+  insuranceValidUntil: String
+  interiorColor: TransportColor!
+  interiorMaterial: CarInteriorMaterial! = OTHER
+  isTurbo: Boolean! = false
+  licensePlate: String!
+  mileage: Float
+  model: String!
+  notes: String
+  pricePerDay: Float
+  pricePerKm: Float
+  seats: Int!
+  steeringWheelSide: SteeringWheelSide! = LEFT
+  transmission: TransmissionType!
+  type: TransportType!
+  userId: String
+  year: Int!
+}
+
+input UpdateUserInput {
+  backImageId: String
+  birthday: String!
+  companyId: String!
+  firstName: String!
+  frontImageId: String
+  imageId: String
+  lastName: String!
+  middleName: String
+  passportNumber: String
+  personalId: String
+  role: Role! = GUEST
+  status: UserStatus! = PENDING
+  statusReason: String
+}
+
+type UserDto {
+  birthday: DateTime!
+  companyId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  details: String!
+  email: String!
+  firstName: String!
+  id: String!
+  lastName: String!
+  middleName: String
+  passportNumber: String
+  personalId: String
+  role: Role!
+  status: UserStatus!
+  statusReason: String
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+input UserEmailStatusUniqueInputDto {
+  email: String!
+  status: UserStatus! = PENDING
+}
+
+type UserEntity {
+  backImage: FileEntity
+  backImageId: String
+  birthday: DateTime!
+  bookingDrivers: [PackageEntity!]!
+  bookingGuides: [PackageEntity!]!
+  company: CompanyEntity!
+  companyId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  details: String!
+  email: String!
+  files: [FileEntity!]!
+  firstName: String!
+  frontImage: FileEntity
+  frontImageId: String
+  id: String!
+  image: FileEntity
+  imageId: String
+  lastName: String!
+  licenses: [LicenseEntity!]!
+  middleName: String
+  orders: [OrderEntity!]!
+  packageReviews: [PackageReviewEntity!]!
+  packages: [PackageEntity!]!
+  passportNumber: String
+  personalId: String
+  role: Role!
+  status: UserStatus!
+  statusReason: String
+  transports: [TransportEntity!]!
+  updatedAt: DateTime!
+  updatedBy: String!
+}
+
+enum UserStatus {
+  ACTIVE
+  DELETED
+  INACTIVE
+  PENDING
+  SUSPENDED
+}

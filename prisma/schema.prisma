@@ -1,0 +1,1308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+
+  output = "../src/prisma-client"
+
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+generator nestjsDto {
+  provider                        = "nestjs-prisma-gen"
+  output                          = "../src/generated"
+  definiteAssignmentAssertion     = "false"
+  outputToNestJsResourceStructure = "true"
+  flatResourceStructure           = "true"
+  exportRelationModifierClasses   = "true"
+  reExport                        = "true"
+  generateFileTypes               = "all"
+  createDtoPrefix                 = "Create"
+  updateDtoPrefix                 = "Update"
+  dtoSuffix                       = "Dto"
+  entityPrefix                    = ""
+  entitySuffix                    = "Entity"
+  fileNamingStyle                 = "camel"
+  classValidation                 = "true"
+  noDependencies                  = "false"
+  generateEnums                   = "true"
+  outputType                      = "class"
+  prettier                        = "true"
+  outputApiPropertyType           = "true"
+  wrapRelationsAsType             = "false"
+  addGraphqlTypes                 = "true"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Language {
+  /// @DtoCreateHidden
+  id      Int      @id @default(autoincrement())
+  name    String
+  abbr    String   @unique
+  native  String
+  locale  String
+  active  Boolean  @default(true)
+  default Boolean? @default(false)
+}
+
+model Folder {
+  /// @DtoCreateHidden
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(50)
+  lft       Int      @default(0)
+  rgt       Int      @default(0)
+  depth     Int      @default(0)
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+  parentId  Int?
+  parent    Folder?  @relation("FolderToParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Folder[] @relation("FolderToParent")
+  files     File[]
+
+  @@unique([companyId, parentId, name])
+}
+
+model File {
+  /// @DtoCreateHidden
+  id        String   @id @unique @default(dbgenerated("CONCAT('FILE-', gen_random_uuid())"))
+  type      FileType
+  size      String
+  name      String
+  extension String
+  mime      String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  url       String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  key       String
+  company   Company  @relation(fields: [companyId], references: [id])
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+  folder    Folder?  @relation(fields: [folderId], references: [id])
+  /// @DtoRelationIncludeId
+  folderId  Int?     @db.Integer
+
+  contentFiles ContentFiles[]
+
+  licenseFiles       License[] @relation("licenseFile")
+  licenseFrontImages License[] @relation("licenseFrontImage")
+  licenseBackImages  License[] @relation("licenseBackImage")
+
+  profileImage            User[]    @relation("profileImage")
+  passportFrontImages     User[]    @relation("passportFrontImage")
+  passportBackImages      User[]    @relation("passportBackImage")
+  contentMainImages       Content[] @relation("contentMainImage")
+  contentCoverImages      Content[] @relation("contentCoverImage")
+  contentBackgroundImages Content[] @relation("contentBackgroundImage")
+
+  transportFiles TransportFiles[]
+
+  createdAt DateTime    @default(now())
+  prices    PriceFile[]
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([folderId])
+}
+
+model Currency {
+  id        String   @id @unique
+  name      String
+  active    Boolean  @default(true)
+  default   Boolean  @default(false)
+  rate      Float    @default(1)
+  price     Price[]
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+  Order     Order[]
+}
+
+model Price {
+  /// @DtoCreateHidden
+  id          BigInt    @id @default(autoincrement())
+  name        String?
+  currency    Currency  @relation(fields: [currencyId], references: [id])
+  /// @DtoRelationIncludeId
+  currencyId  String
+  maxAdult    Int?
+  quantity    Int?
+  content     Content   @relation(fields: [contentId], references: [id])
+  details     Json      @default("{}") @db.JsonB
+  /// @DtoRelationIncludeId
+  contentId   String
+  price       Float
+  infantPrice Float
+  privacy     Boolean
+  startDate   DateTime?
+  endDate     DateTime?
+  packages    Package[]
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt      DateTime         @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy      String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt      DateTime         @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy      String
+  files          PriceFile[]
+  PackageContent PackageContent[]
+
+  @@index([contentId])
+  @@index([currencyId])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model Page {
+  /// @DtoCreateHidden
+  id           String        @id @unique @default(dbgenerated("CONCAT('PAGE-', gen_random_uuid())"))
+  parentId     String?
+  parent       Page?         @relation("PageToParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Page[]        @relation("PageToParent")
+  pageId       String
+  langId       Int
+  title        String        @db.Text
+  slug         String?       @db.Text
+  description  String?       @db.Text
+  text         String?       @db.Text
+  tags         String?       @db.Text
+  metas        Json          @default("{\"title\": \"\", \"description\": \"\", \"imageId\": \"\", \"type\": \"\"}") @db.JsonB
+  details      Json          @default("{}") @db.JsonB
+  template     String?
+  status       ContentStatus
+  type         ContentType
+  coverId      String?
+  imageId      String?
+  backgroundId String?
+  position     Position[]    @default([HIDDEN])
+  lft          Int           @default(0)
+  rgt          Int           @default(0)
+  order        Int           @default(1)
+
+  pageContents PageContents[]
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId    String
+  company      Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+
+  @@unique([pageId, langId])
+  @@index([parentId])
+  @@index([companyId])
+}
+
+model Content {
+  /// @DtoCreateHidden
+  id                String        @id @unique @default(dbgenerated("CONCAT('CONTENT-', gen_random_uuid())"))
+  itemId            String
+  langId            Int
+  contentType       ContentType
+  title             String        @db.Text
+  description       String?       @db.Text
+  text              String?       @db.Text
+  slug              String?       @db.VarChar(100)
+  coverId           String?
+  coverImage        File?         @relation("contentCoverImage", fields: [coverId], references: [id])
+  imageId           String?
+  mainImage         File?         @relation("contentMainImage", fields: [imageId], references: [id])
+  backgroundId      String?
+  backgroundImage   File?         @relation("contentBackgroundImage", fields: [backgroundId], references: [id])
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  views             Int           @default(0)
+  status            ContentStatus @default(PENDING)
+  startDate         DateTime?
+  endDate           DateTime?
+  countryId         Int
+  cityId            Int
+  regionId          Int
+  latitude          Float?
+  longitude         Float?
+  availableQuantity Float?
+  metas             Json          @default("{\"title\": \"\", \"description\": \"\", \"imageId\": \"\", \"type\": \"\"}") @db.JsonB
+  details           Json          @default("\{\"area\": \"0.0\", \"weight\": \"0.0\", \"volume\": \"0.0\", \"width\": \"0.0\, \"length\": \"0.0\, \"height\": \"0.0\"}") @db.JsonB
+  amenities         Json          @default("{}") @db.JsonB
+
+  pageContents PageContents[]
+  contentFiles ContentFiles[]
+  // company   Company @relation(fields: [companyId], references: [id])
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  /// @DtoRelationIncludeId
+  companyId    String
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt         DateTime         @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy         String
+  packages          Package[]
+  packageDepartures Package[]        @relation("PackageDeparture")
+  packageArrivals   Package[]        @relation("PackageArrival")
+  packageContent    PackageContent[]
+  Order             Order[]
+
+  @@unique([itemId, langId])
+  @@unique([companyId, langId, slug])
+  @@index([companyId])
+  @@index([cityId])
+  @@index([contentType])
+  @@index([status])
+  @@index([slug])
+  @@index([startDate])
+  @@index([endDate])
+  @@index([langId])
+}
+
+model PageContents {
+  /// @DtoRelationIncludeId
+  pageId    String
+  /// @DtoRelationIncludeId
+  contentId String
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  page    Page    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@id([pageId, contentId])
+}
+
+model ContentFiles {
+  /// @DtoRelationIncludeId
+  fileId    String
+  /// @DtoRelationIncludeId
+  contentId String
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  file    File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, contentId])
+}
+
+model Company {
+  /// @DtoCreateHidden
+  id           String       @id @unique @default(dbgenerated("CONCAT('COMPANY-', gen_random_uuid())"))
+  name         String
+  email        String
+  phone        String
+  address      String
+  businessType BusinessType @default(OTHER)
+  companyType  CompanyType  @default(OTHER)
+
+  details  Json      @default("{}") @db.JsonB
+  isPublic Boolean   @default(false)
+  // content  Content[]
+  packages Package[]
+  files    File[]
+  users    User[]
+
+  parentId Int?
+  parent   Company?  @relation("CompanyToParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children Company[] @relation("CompanyToParent")
+
+  country   Country @relation(fields: [countryId], references: [id])
+  /// @DtoRelationIncludeId
+  countryId Int
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String?
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt            DateTime              @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy            String?
+  pages                Page[]
+  transports           Transport[]
+  orders               Order[]
+  companySubscriptions CompanySubscription[]
+}
+
+model User {
+  /// @DtoCreateHidden
+  id             String     @id @unique @default(dbgenerated("CONCAT('USER-', gen_random_uuid())"))
+  firstName      String
+  middleName     String?
+  lastName       String
+  /// @DtoUpdateHidden
+  email          String
+  personalId     String?
+  passportNumber String?
+  status         UserStatus @default(PENDING)
+  statusReason   String?
+  role           Role       @default(GUEST)
+  birthday       DateTime
+  /// @DtoApiHidden
+  /// @DtoExcludePlainOnly
+  /// @DtoUpdateHidden
+  password       String
+  details        Json       @default("{}") @db.JsonB
+  company        Company    @relation(fields: [companyId], references: [id])
+  /// @DtoRelationIncludeId
+  companyId      String
+
+  image        File?   @relation("profileImage", fields: [imageId], references: [id])
+  imageId      String?
+  frontImage   File?   @relation("passportFrontImage", fields: [frontImageId], references: [id])
+  frontImageId String?
+  backImage    File?   @relation("passportBackImage", fields: [backImageId], references: [id])
+  backImageId  String?
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt      DateTime        @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy      String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt      DateTime        @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy      String
+  transports     Transport[]
+  licenses       License[]
+  files          File[]
+  packages       Package[]
+  bookingDrivers Package[]       @relation("BookingDriver")
+  orders         Order[]
+  packageReviews PackageReview[]
+
+  @@unique([email, status])
+  @@index([id])
+}
+
+model Country {
+  id             Int       @id
+  name           String
+  code           String
+  iso3           String
+  company        Company[]
+  numericCode    String
+  phoneCode      String
+  capital        String
+  currency       String
+  currencyName   String
+  currencySymbol String
+  tld            String
+  native         String
+  region         String
+  subRegion      String
+  latitude       String
+  longitude      String
+  emoji          String
+  hasStates      Boolean
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt      DateTime  @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt      DateTime  @updatedAt
+
+  @@index([id])
+}
+
+model Package {
+  /// @DtoCreateHidden
+  id        String  @id @unique @default(dbgenerated("CONCAT('PACKAGE-', gen_random_uuid())"))
+  company   Company @relation(fields: [companyId], references: [id])
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+  content   Content @relation(fields: [contentId], references: [id])
+  /// @DtoRelationIncludeId
+  contentId String
+
+  /// @DtoRelationIncludeId
+  departureId      String
+  departure        Content          @relation("PackageDeparture", fields: [departureId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  arrivalId        String
+  arrival          Content          @relation("PackageArrival", fields: [arrivalId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  driverId         String?
+  driver           User?            @relation("BookingDriver", fields: [driverId], references: [id], onDelete: Restrict)
+  price            Price            @relation(fields: [priceId], references: [id])
+  /// @DtoRelationIncludeId
+  priceId          BigInt           @db.BigInt
+  status           BookingStatus    @default(IN_PROGRESS)
+  additionalProfit Float?
+  startDate        DateTime
+  endDate          DateTime
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt        DateTime         @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy        String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt        DateTime         @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy        String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  totalPrice       Float
+  packageContent   PackageContent[]
+  packageReviews   PackageReview[]
+  User             User?            @relation(fields: [userId], references: [id])
+  userId           String?
+  Order            Order[]
+
+  @@index([companyId])
+  @@index([contentId])
+  @@index([priceId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model Transport {
+  id                String            @id @unique @default(dbgenerated("CONCAT('TRANSPORT-', gen_random_uuid())"))
+  brand             TransportBrands
+  model             String
+  year              Int
+  engineSize        Float
+  licensePlate      String            @unique
+  type              TransportMode
+  seats             Int
+  color             TransportColor
+  steeringWheelSide SteeringWheelSide @default(OTHER)
+  isTurbo           Boolean           @default(false)
+  fuelConsumption   Float? // PerKm
+
+  area        Float
+  weight      Float
+  carryWeight Float
+  volume      Float
+  width       Float
+  length      Float
+  height      Float
+
+  cylinders            Int?
+  mileage              Float?
+  airbags              Int?
+  brandName            String?
+  transmission         TransmissionType
+  fuelType             FuelType
+  insuranceValidUntil  DateTime?
+  inspectionValidUntil DateTime
+  pricePerDay          Float?
+  pricePerKm           Float?
+  notes                String?
+
+  user      User?   @relation(fields: [userId], references: [id])
+  /// @DtoRelationIncludeId
+  userId    String?
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  transportFiles TransportFiles[]
+
+  @@index([companyId])
+}
+
+model TransportFiles {
+  /// @DtoRelationIncludeId
+  fileId      String
+  /// @DtoRelationIncludeId
+  transportId String
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  file      File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  transport Transport @relation(fields: [transportId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, transportId])
+}
+
+model PriceFile {
+  /// @DtoRelationIncludeId
+  priceId BigInt
+  /// @DtoRelationIncludeId
+  fileId  String
+
+  // optional metadata for later:
+  // isPrimary Boolean @default(false)
+  // label     String?
+  // position  Int     @default(0)
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  price Price @relation(fields: [priceId], references: [id], onDelete: Cascade)
+  file  File  @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([priceId, fileId])
+  @@index([fileId])
+  @@index([priceId])
+}
+
+model License {
+  id         String              @id @unique @default(dbgenerated("CONCAT('LICENSE-', gen_random_uuid())"))
+  name       String
+  number     String
+  validUntil DateTime
+  type       DriverLicenseType[] @default([])
+
+  file         File?   @relation("licenseFile", fields: [fileId], references: [id])
+  fileId       String?
+  frontImage   File?   @relation("licenseFrontImage", fields: [frontImageId], references: [id])
+  frontImageId String?
+  backImage    File?   @relation("licenseBackImage", fields: [backImageId], references: [id])
+  backImageId  String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PackageReview {
+  /// @DtoCreateHidden
+  id String @id @unique @default(dbgenerated("CONCAT('REVIEW-', gen_random_uuid())"))
+
+  // who/what is reviewed
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  /// @DtoRelationIncludeId
+  packageId String
+
+  reviewer User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  userId   String
+
+  // review content
+  rating  Float   @default(5.0)
+  title   String?
+  comment String? @db.Text
+  details Json    @default("{}") @db.JsonB
+
+  isApproved Boolean @default(true)
+  isPublic   Boolean @default(true)
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+
+  @@unique([packageId, userId])
+  @@index([packageId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+model PackageContent {
+  /// @DtoRelationIncludeId
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  /// @DtoRelationIncludeId
+  contentId String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Restrict)
+
+  // ordering of the content within the package
+  position Int @default(0)
+
+  // lock a specific Price row chosen for this content inside the package (optional)
+  price   Price?  @relation(fields: [priceId], references: [id], onDelete: SetNull)
+  /// @DtoRelationIncludeId
+  priceId BigInt?
+
+  // denormalized snapshot (useful even if Price later changes)
+  unitPrice    Float  @default(0)
+  unitCurrency String
+  quantity     Int    @default(1)
+  details      Json   @default("{}") @db.JsonB
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  @@id([packageId, contentId])
+  @@index([packageId])
+  @@index([contentId])
+  @@index([priceId])
+  @@index([position])
+}
+
+model Order {
+  /// @DtoCreateHidden
+  id String @id @unique @default(dbgenerated("CONCAT('ORDER-', gen_random_uuid())"))
+
+  // who and where this order belongs
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  userId    String
+
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  contentId String?
+  content   Content? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  // money
+  currency   Currency @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  currencyId String
+  subtotal   Float    @default(0)
+  discount   Float    @default(0)
+  tax        Float    @default(0)
+  total      Float    @default(0)
+
+  // status & payment
+  status        OrderStatus    @default(PENDING)
+  paymentMethod PaymentMethod? // optional until chosen
+  paymentRef    String? // PSP reference / bank txn code
+  notes         String?
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([currencyId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model MembershipPlan {
+  /// @DtoCreateHidden
+  id                   String                @id @unique @default(dbgenerated("CONCAT('PLAN-', gen_random_uuid())"))
+  name                 String
+  code                 MembershipType
+  description          String?
+  features             Json?                 @default("{}") @db.JsonB
+  details              Json?                 @default("{}") @db.JsonB
+  active               Boolean               @default(true)
+  interval             BillingInterval
+  price                Float // price per billing period in USD
+  discount             Float?                @default(0)
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt            DateTime              @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy            String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt            DateTime              @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy            String
+  companySubscriptions CompanySubscription[]
+
+  @@index([active])
+}
+
+model CompanySubscription {
+  /// @DtoCreateHidden
+  id String @id @unique @default(dbgenerated("CONCAT('SUBS-', gen_random_uuid())"))
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+
+  plan   MembershipPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  planId String
+
+  interval            BillingInterval
+  price               Float           @default(0)
+  discount            Float           @default(0)
+  totalPerPeriodPrice Float           @default(0)
+
+  status SubscriptionStatus @default(TRIALING)
+
+  // Lifecycle
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  renewsAt           DateTime?
+  cancelAt           DateTime?
+  canceledAt         DateTime?
+
+  notes     String?
+  details   Json     @default("{}") @db.JsonB
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+
+  @@index([companyId])
+  @@index([planId])
+  @@index([interval])
+  @@index([status])
+  @@index([currentPeriodEnd])
+}
+
+enum BillingInterval {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum MembershipType {
+  FREE
+  STARTER
+  PLUS
+  PRO
+  ULTRA
+  ENTERPRISE
+  CUSTOM
+  QUEUE
+}
+
+enum OrderStatus {
+  PENDING
+  AWAITING_PAYMENT
+  PAID
+  PARTIALLY_REFUNDED
+  REFUNDED
+  CANCELLED
+  FAILED
+}
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  CASH
+  WALLET
+  OTHER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+  PENDING
+  SUSPENDED
+}
+
+enum ContentStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  DRAFT
+}
+
+enum ShipmentStatus {
+  DRAFT // User is still editing, not booked
+  PENDING_APPROVAL // Waiting for admin/carrier confirmation
+  BOOKED // Confirmed, vehicle assigned
+  AT_PICKUP // Driver arrived at origin
+  IN_TRANSIT // Goods are moving
+  CUSTOMS_HOLD // Stuck at border (Critical for international)
+  AT_DELIVERY // Driver arrived at destination
+  DELIVERED // POD (Proof of Delivery) signed
+  CANCELLED // Voided
+  RETURNED // Delivery failed, returned to sender
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  PAID
+  CANCELLED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  REFUNDED
+  NO_SHOW
+  EXPIRED
+  PAID
+  PARTIALLY_PAID // Common in B2B (50% deposit)
+  DISPUTED // Chargeback initiated
+}
+
+enum Incoterm {
+  EXW // Ex Works (Buyer pays everything from factory door)
+  FCA // Free Carrier
+  CPT // Carriage Paid To
+  CIP // Carriage and Insurance Paid To
+  DAP // Delivered at Place
+  DPU // Delivered at Place Unloaded
+  DDP // Delivered Duty Paid (Seller pays everything - "Door to Door")
+  FAS // Free Alongside Ship (Sea only)
+  FOB // Free on Board (Sea only)
+  CFR // Cost and Freight (Sea only)
+  CIF // Cost, Insurance and Freight (Sea only)
+}
+
+enum CompanyType {
+  SUPPLIER
+  MANUFACTURER
+  LOGISTIC
+  CUSTOMER
+}
+
+enum BusinessType {
+  SOLE_PROPRIETORSHIP
+  GENERAL_PARTNERSHIP
+  LIMITED_PARTNERSHIP
+  LIMITED_LIABILITY_PARTNERSHIP
+  LIMITED_LIABILITY_COMPANY
+  C_CORP
+  B_CORP
+  S_CORP
+  CLOSE_CORPORATION
+  NONPROFIT_CORPORATION
+  PRIVATE_COMPANY
+  PUBLIC_COMPANY
+  STATE_OWNED_ENTERPRISE
+  JOINT_VENTURE
+  HOLDING_COMPANY
+  SUBSIDIARY_COMPANY
+  OTHER
+}
+
+enum Role {
+  ROOT
+  ADMIN
+  DIRECTOR
+  GENERAL_MANAGER
+  SALES_MANAGER
+  HR_MANAGER
+
+  DRIVER
+  RESERVATIONS_MANAGER
+  ACCOUNTANT
+
+  CLIENT
+  GUEST
+}
+
+enum FileType {
+  PDF
+  DOC
+  DOCX
+  CSV
+  XLS
+  XLSX
+  PPT
+  PPTX
+  JPG
+  PNG
+  GIF
+  MP4
+  MP3
+  WAV
+  WEBP
+}
+
+enum ContentType {
+  HOME
+  NEWS
+  TEXT
+  GALLERY
+  CONTACTS
+  TEAM
+  VACANCY
+  TRANSFER
+  PACKAGE
+  COMPANY
+  FAQ
+  ABOUT_US
+  SLIDER
+  BANNER
+  SERVICE
+  BRAND
+  HEADER
+  FOOTER
+  DESTINATION
+  GOODS
+}
+
+enum TransferType {
+  PRIVATE
+  SHARED
+  LUXURY
+  NONE
+}
+
+enum Position {
+  TOP
+  HEADER
+  MAIN
+  SIDEBAR
+  FOOTER
+  BOTTOM
+  HIDDEN
+}
+
+enum ServiceType {
+  IMPORT
+  EXPORT
+  DOMESTIC
+}
+
+enum CargoType {
+  GENERAL_MERCHANDISE // Standard boxes, pallets, clothes
+  PERISHABLE // Food, flowers, medicine (Reefer)
+  HAZARDOUS // Dangerous Goods (DG)
+  LIQUID_BULK // Oil, chemicals in tankers
+  DRY_BULK // Grains, coal, gravel
+  OVERSIZED // Machinery, vehicles, construction materials
+  FRAGILE // Glass, electronics
+  HIGH_VALUE // Jewelry, cash, art
+  LIVE_ANIMALS // Livestock, pets
+}
+
+// The 9 UN Hazard Classes (Standard for Global Logistics)
+enum HazardClass {
+  EXPLOSIVES // Class 1: Fireworks, ammunition
+  GASES // Class 2: Propane, oxygen
+  FLAMMABLE_LIQUIDS // Class 3: Gasoline, paint
+  FLAMMABLE_SOLIDS // Class 4: Matches, sulphur
+  OXIDIZING_SUBSTANCES // Class 5: Fertilizers
+  TOXIC_INFECTIOUS // Class 6: Pesticides, viruses
+  RADIOACTIVE // Class 7: Medical isotopes
+  CORROSIVES // Class 8: Battery acid
+  MISCELLANEOUS_DANGEROUS // Class 9: Lithium batteries, dry ice
+}
+
+enum ShipmentType {
+  FTL
+  LTL
+  FCL
+  LCL
+}
+
+enum TransportMode {
+  AIR
+  SEA
+  RAIL
+  ROAD
+}
+
+enum SteeringWheelSide {
+  LEFT
+  RIGHT
+  BOTH
+  OTHER
+}
+
+enum VehicleType {
+  // --- ROAD ---
+  MOTORCYCLE
+  CAR
+  VAN
+  PICKUP_TRUCK
+  BOX_TRUCK
+  FLATBED_TRUCK
+  REFRIGERATED_TRUCK
+  SEMI_TRAILER_DRY
+  SEMI_TRAILER_REEFER
+  SEMI_TRAILER_FLATBED
+  TANKER_TRUCK
+  CAR_CARRIER
+  DUMP_TRUCK
+  CONTAINER_CARRIER
+
+  // --- RAIL ---
+  FREIGHT_TRAIN_CONTAINER
+  FREIGHT_TRAIN_BOXCAR
+  FREIGHT_TRAIN_HOPPER
+  FREIGHT_TRAIN_TANKER
+
+  // --- SEA ---
+  CONTAINER_SHIP
+  BULK_CARRIER
+  RORO_VESSEL
+  TANKER_VESSEL
+  BARGE
+  BREAKBULK_VESSEL
+
+  // --- AIR ---
+  PASSENGER_AIRCRAFT_BELLY // Cargo loaded on commercial passenger flights
+  CARGO_FREIGHTER // Dedicated cargo plane
+  CHARTER_PLANE
+  DRONE
+}
+
+enum TransmissionType {
+  AUTOMATIC
+  MANUAL
+  SEMI_AUTOMATIC
+  CVT
+  OTHER
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  HYBRID
+  HYBRID_DIESEL
+  CNG // Compressed Natural Gas
+  LNG // Liquefied Natural Gas
+  LPG // Liquefied Petroleum Gas
+  BIO_DIESEL
+
+  HYDROGEN
+  HFO
+  MGO
+  VLSFO
+
+  JET_A1 // Standard Jet Fuel
+  JET_B // Cold Weather Jet Fuel
+  AVGAS // Piston Engine Fuel
+  SAF // Sustainable Aviation Fuel
+
+  OTHER
+}
+
+enum DriverLicenseType {
+  // --- EU / VIENNA STANDARD ---
+  EU_AM // Moped
+  EU_A1 // Light Motorcycle
+  EU_A2 // Medium Motorcycle
+  EU_A // Heavy Motorcycle
+
+  EU_B // Car / Light Van
+  EU_B1 // Car / Light Van
+  EU_BE // Car + Trailer
+
+  EU_C1 // Medium Truck (3.5t - 7.5t)
+  EU_C1E // Medium Truck + Trailer
+  EU_C // Heavy Truck (Rigid)
+  EU_CE // Heavy Truck + Trailer (Articulated / "Class 1")
+
+  EU_D1 // Minibus
+  EU_D1E // Minibus + Trailer
+  EU_D // Bus
+  EU_DE // Bus + Trailer
+
+  // --- US / CANADA STANDARD ---
+  US_CLASS_A // CDL A (Combination / Semi)
+  US_CLASS_B // CDL B (Straight Truck)
+  US_CLASS_C // CDL C (Small Hazmat/Bus)
+  US_CLASS_D // Standard Operator (Car)
+  US_CLASS_M // Motorcycle
+
+  F
+  G
+  M
+  T
+  SPL
+  PPL
+  ATPL
+  SAILOR
+  OTHER
+}
+
+enum TransportBrands {
+  // --- ROAD: EUROPE ---
+  VOLVO
+  SCANIA
+  MERCEDES_BENZ
+  MAN
+  DAF
+  IVECO
+  RENAULT_TRUCKS
+
+  // --- ROAD: NORTH AMERICA ---
+  FREIGHTLINER
+  KENWORTH
+  PETERBILT
+  MACK
+  INTERNATIONAL
+  TESLA
+
+  // --- ROAD: ASIA / LIGHT DUTY ---
+  ISUZU
+  HINO
+  FUSO
+  TATA
+  DONGFENG
+  FORD
+  RAM
+
+  // --- TRAILERS ---
+  SCHMITZ_CARGOBULL
+  KRONE
+  WABASH
+  GREAT_DANE
+
+  // --- AIR ---
+  BOEING
+  AIRBUS
+  ANTONOV
+  CESSNA
+  OTHER
+}
+
+enum TransportColor {
+  WHITE
+  BLACK
+  GRAY
+  SILVER
+  RED
+  BLUE
+  GREEN
+  YELLOW
+  ORANGE
+  BROWN
+  BEIGE
+  GOLD
+  PURPLE
+  PINK
+  BURGUNDY
+  MAROON
+  CHAMPAGNE
+  BRONZE
+  COPPER
+  ROSE_GOLD
+  TEAL
+  TURQUOISE
+  MAGENTA
+  LAVENDER
+  LILAC
+  MIDNIGHT_BLUE
+  NARDO_GRAY
+  GRADIENT
+  OTHER
+}
