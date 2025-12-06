@@ -1,5 +1,5 @@
 {
-  "name": "rubicon-backend",
+  "name": "cargo-backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -22,9 +22,9 @@
     "command-nest": "ts-node -r tsconfig-paths/register ./src/console.ts",
     "prisma:gen": "rm -rf ./src/prisma-client && rm -rf ./src/types && prisma generate --schema ./prisma/schema.prisma",
     "prisma:ci:gen": "yarn prisma:gen --max-processes '50%'",
-    "prisma:migrate": "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/rubicon prisma migrate dev",
-    "prisma:migrate:local": "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/rubicon prisma migrate dev",
-    "add:migration": "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/rubicon prisma migrate dev --name add_package_relations_to_orders_tables",
+    "prisma:migrate": "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/cargo prisma migrate dev",
+    "prisma:migrate:local": "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/cargo prisma migrate dev",
+    "add:migration": "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/cargo prisma migrate dev --name add_package_relations_to_orders_tables",
     "cli": "ts-node -r tsconfig-paths/register src/cli.ts",
     "db:seed": "ts-node -r tsconfig-paths/register src/cli.ts db:seed"
   },

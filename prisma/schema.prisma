@@ -1053,7 +1053,7 @@ enum ContentType {
   HEADER
   FOOTER
   DESTINATION
-  GOODS
+  GOODS // For Inventory Management for Supplier / Manufacturer companies
 }
 
 enum TransferType {

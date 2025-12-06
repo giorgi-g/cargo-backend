@@ -1,18 +1,18 @@
 variables:
   REPOSITORY_URL: .dkr.ecr.eu-central-1.amazonaws.com
-  ECR_NAME: rubicon-backend
+  ECR_NAME: cargo-backend
   REGION: eu-central-1
   CLUSTER_NAME: ecs-dev
   CLUSTER_NAME_PROD: ecs-prod
-  SERVICE_NAME_DEV: rubicon-back-dev
-  TASK_DEFINITION_NAME_DEV: rubicon-back-dev
+  SERVICE_NAME_DEV: cargo-back-dev
+  TASK_DEFINITION_NAME_DEV: cargo-back-dev
   #SERVICE_NAME_STAGE: Espille-forked-stage
   #TASK_DEFINITION_NAME_STAGE: spille-forked-stage
   #SERVICE_NAME_PREPROD: Espille-forked-preprod
   #TASK_DEFINITION_NAME_PREPROD: spille-forked-preprod
-  SERVICE_NAME_PROD: rubicon-back-prod
-  TASK_DEFINITION_NAME_PROD: rubicon-back-prod
+  SERVICE_NAME_PROD: cargo-back-prod
+  TASK_DEFINITION_NAME_PROD: cargo-back-prod
 include:
-  project: 'rubicon/Ci-CD'
+  project: 'cargo/Ci-CD'
   file: /gitlab-ci/.gitlab-ci.yml
 

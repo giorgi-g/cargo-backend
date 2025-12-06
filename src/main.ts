@@ -35,8 +35,8 @@ async function bootstrap() {
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
     const config = new DocumentBuilder()
-        .setTitle("Rubicon Backend")
-        .setDescription("Rubicon Backend API")
+        .setTitle("Rubicon Logistics Backend")
+        .setDescription("Rubicon Logistics Backend API")
         .setVersion("1.0")
         .addBearerAuth(
             { type: "http", scheme: "bearer", bearerFormat: "JWT" },
