@@ -125,8 +125,7 @@ model File {
 
   transportFiles TransportFiles[]
 
-  createdAt DateTime    @default(now())
-  prices    PriceFile[]
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([companyId])
@@ -139,7 +138,6 @@ model Currency {
   active    Boolean  @default(true)
   default   Boolean  @default(false)
   rate      Float    @default(1)
-  price     Price[]
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   createdAt DateTime @default(now())
@@ -153,47 +151,6 @@ model Currency {
   /// @DtoUpdateHidden
   updatedBy String
   Order     Order[]
-}
-
-model Price {
-  /// @DtoCreateHidden
-  id          BigInt    @id @default(autoincrement())
-  name        String?
-  currency    Currency  @relation(fields: [currencyId], references: [id])
-  /// @DtoRelationIncludeId
-  currencyId  String
-  maxAdult    Int?
-  quantity    Int?
-  content     Content   @relation(fields: [contentId], references: [id])
-  details     Json      @default("{}") @db.JsonB
-  /// @DtoRelationIncludeId
-  contentId   String
-  price       Float
-  infantPrice Float
-  privacy     Boolean
-  startDate   DateTime?
-  endDate     DateTime?
-  packages    Package[]
-
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdAt      DateTime         @default(now())
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdBy      String
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedAt      DateTime         @updatedAt
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedBy      String
-  files          PriceFile[]
-  PackageContent PackageContent[]
-
-  @@index([contentId])
-  @@index([currencyId])
-  @@index([startDate])
-  @@index([endDate])
 }
 
 model Page {
@@ -250,35 +207,38 @@ model Page {
 
 model Content {
   /// @DtoCreateHidden
-  id                String        @id @unique @default(dbgenerated("CONCAT('CONTENT-', gen_random_uuid())"))
-  itemId            String
-  langId            Int
-  contentType       ContentType
-  title             String        @db.Text
-  description       String?       @db.Text
-  text              String?       @db.Text
-  slug              String?       @db.VarChar(100)
-  coverId           String?
-  coverImage        File?         @relation("contentCoverImage", fields: [coverId], references: [id])
-  imageId           String?
-  mainImage         File?         @relation("contentMainImage", fields: [imageId], references: [id])
-  backgroundId      String?
-  backgroundImage   File?         @relation("contentBackgroundImage", fields: [backgroundId], references: [id])
+  id                    String        @id @unique @default(dbgenerated("CONCAT('CONTENT-', gen_random_uuid())"))
+  itemId                String
+  langId                Int
+  contentType           ContentType
+  title                 String        @db.Text
+  description           String?       @db.Text
+  text                  String?       @db.Text
+  slug                  String?       @db.VarChar(100)
+  coverId               String?
+  coverImage            File?         @relation("contentCoverImage", fields: [coverId], references: [id])
+  imageId               String?
+  mainImage             File?         @relation("contentMainImage", fields: [imageId], references: [id])
+  backgroundId          String?
+  backgroundImage       File?         @relation("contentBackgroundImage", fields: [backgroundId], references: [id])
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  views             Int           @default(0)
-  status            ContentStatus @default(PENDING)
-  startDate         DateTime?
-  endDate           DateTime?
-  countryId         Int
-  cityId            Int
-  regionId          Int
-  latitude          Float?
-  longitude         Float?
-  availableQuantity Float?
-  metas             Json          @default("{\"title\": \"\", \"description\": \"\", \"imageId\": \"\", \"type\": \"\"}") @db.JsonB
-  details           Json          @default("\{\"area\": \"0.0\", \"weight\": \"0.0\", \"volume\": \"0.0\", \"width\": \"0.0\, \"length\": \"0.0\, \"height\": \"0.0\"}") @db.JsonB
-  amenities         Json          @default("{}") @db.JsonB
+  views                 Int           @default(0)
+  status                ContentStatus @default(PENDING)
+  startDate             DateTime?
+  endDate               DateTime?
+  countryId             Int
+  cityId                Int
+  regionId              Int
+  latitude              Float?
+  longitude             Float?
+  availableQuantity     Float?
+  price                 Float?
+  isPublic              Boolean       @default(false)
+  visibleToCompanyTypes Json          @default("[]") @db.JsonB
+  metas                 Json          @default("{\"title\": \"\", \"description\": \"\", \"imageId\": \"\", \"type\": \"\"}") @db.JsonB
+  details               Json          @default("{\"area\": \"0.0\", \"weight\": \"0.0\", \"volume\": \"0.0\", \"width\": \"0.0\", \"length\": \"0.0\", \"height\": \"0.0\"}") @db.JsonB
+  amenities             Json          @default("{}") @db.JsonB
 
   pageContents PageContents[]
   contentFiles ContentFiles[]
@@ -301,11 +261,14 @@ model Content {
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   updatedBy         String
-  packages          Package[]
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  deletedAt         DateTime?
+  chains            Package[]
   packageDepartures Package[]        @relation("PackageDeparture")
   packageArrivals   Package[]        @relation("PackageArrival")
   packageContent    PackageContent[]
-  Order             Order[]
+  orderGoods        OrderGoods[]
 
   @@unique([itemId, langId])
   @@unique([companyId, langId, slug])
@@ -317,6 +280,7 @@ model Content {
   @@index([startDate])
   @@index([endDate])
   @@index([langId])
+  @@index([isPublic])
 }
 
 model PageContents {
@@ -370,11 +334,11 @@ model Company {
   details  Json      @default("{}") @db.JsonB
   isPublic Boolean   @default(false)
   // content  Content[]
-  packages Package[]
+  chains   Package[]
   files    File[]
   users    User[]
 
-  parentId Int?
+  parentId String?
   parent   Company?  @relation("CompanyToParent", fields: [parentId], references: [id], onDelete: SetNull)
   children Company[] @relation("CompanyToParent")
 
@@ -398,7 +362,11 @@ model Company {
   pages                Page[]
   transports           Transport[]
   orders               Order[]
+  ordersAsCustomer     Order[]               @relation("OrderCustomer")
+  ordersAsSupplier     Order[]               @relation("OrderSupplier")
+  ordersAsLogistics    Order[]               @relation("OrderLogistics")
   companySubscriptions CompanySubscription[]
+  orderChains          OrderChain[]
 }
 
 model User {
@@ -433,23 +401,23 @@ model User {
 
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  createdAt      DateTime        @default(now())
+  createdAt      DateTime     @default(now())
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   createdBy      String
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  updatedAt      DateTime        @updatedAt
+  updatedAt      DateTime     @updatedAt
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   updatedBy      String
   transports     Transport[]
   licenses       License[]
   files          File[]
-  packages       Package[]
-  bookingDrivers Package[]       @relation("BookingDriver")
+  chains         Package[]
+  bookingDrivers Package[]    @relation("BookingDriver")
   orders         Order[]
-  packageReviews PackageReview[]
+  orderChains    OrderChain[]
 
   @@unique([email, status])
   @@index([id])
@@ -506,9 +474,6 @@ model Package {
   /// @DtoRelationIncludeId
   driverId         String?
   driver           User?            @relation("BookingDriver", fields: [driverId], references: [id], onDelete: Restrict)
-  price            Price            @relation(fields: [priceId], references: [id])
-  /// @DtoRelationIncludeId
-  priceId          BigInt           @db.BigInt
   status           BookingStatus    @default(IN_PROGRESS)
   additionalProfit Float?
   startDate        DateTime
@@ -529,14 +494,12 @@ model Package {
   /// @DtoUpdateHidden
   totalPrice       Float
   packageContent   PackageContent[]
-  packageReviews   PackageReview[]
   User             User?            @relation(fields: [userId], references: [id])
   userId           String?
   Order            Order[]
 
   @@index([companyId])
   @@index([contentId])
-  @@index([priceId])
   @@index([status])
   @@index([startDate])
   @@index([endDate])
@@ -611,32 +574,6 @@ model TransportFiles {
   @@id([fileId, transportId])
 }
 
-model PriceFile {
-  /// @DtoRelationIncludeId
-  priceId BigInt
-  /// @DtoRelationIncludeId
-  fileId  String
-
-  // optional metadata for later:
-  // isPrimary Boolean @default(false)
-  // label     String?
-  // position  Int     @default(0)
-
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdAt DateTime @default(now())
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedAt DateTime @updatedAt
-
-  price Price @relation(fields: [priceId], references: [id], onDelete: Cascade)
-  file  File  @relation(fields: [fileId], references: [id], onDelete: Cascade)
-
-  @@id([priceId, fileId])
-  @@index([fileId])
-  @@index([priceId])
-}
-
 model License {
   id         String              @id @unique @default(dbgenerated("CONCAT('LICENSE-', gen_random_uuid())"))
   name       String
@@ -658,48 +595,6 @@ model License {
   updatedAt DateTime @updatedAt
 }
 
-model PackageReview {
-  /// @DtoCreateHidden
-  id String @id @unique @default(dbgenerated("CONCAT('REVIEW-', gen_random_uuid())"))
-
-  // who/what is reviewed
-  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  /// @DtoRelationIncludeId
-  packageId String
-
-  reviewer User   @relation(fields: [userId], references: [id], onDelete: Restrict)
-  /// @DtoRelationIncludeId
-  userId   String
-
-  // review content
-  rating  Float   @default(5.0)
-  title   String?
-  comment String? @db.Text
-  details Json    @default("{}") @db.JsonB
-
-  isApproved Boolean @default(true)
-  isPublic   Boolean @default(true)
-
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdAt DateTime @default(now())
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdBy String
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedAt DateTime @updatedAt
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedBy String
-
-  @@unique([packageId, userId])
-  @@index([packageId])
-  @@index([userId])
-  @@index([rating])
-  @@index([createdAt])
-}
-
 model PackageContent {
   /// @DtoRelationIncludeId
   packageId String
@@ -710,11 +605,6 @@ model PackageContent {
 
   // ordering of the content within the package
   position Int @default(0)
-
-  // lock a specific Price row chosen for this content inside the package (optional)
-  price   Price?  @relation(fields: [priceId], references: [id], onDelete: SetNull)
-  /// @DtoRelationIncludeId
-  priceId BigInt?
 
   // denormalized snapshot (useful even if Price later changes)
   unitPrice    Float  @default(0)
@@ -732,7 +622,6 @@ model PackageContent {
   @@id([packageId, contentId])
   @@index([packageId])
   @@index([contentId])
-  @@index([priceId])
   @@index([position])
 }
 
@@ -753,8 +642,22 @@ model Order {
   packageId String?
   package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
 
-  contentId String?
-  content   Content? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+  // explicit company references for order participants
+  customerCompany  Company? @relation("OrderCustomer", fields: [customerId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  customerId       String?
+  supplierCompany  Company? @relation("OrderSupplier", fields: [supplierId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  supplierId       String?
+  logisticsCompany Company? @relation("OrderLogistics", fields: [logisticsId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  logisticsId      String?
+
+  // one-to-many relationship with Goods via OrderGoods junction table
+  orderGoods OrderGoods[]
+
+  // many-to-many relationship with OrderChain
+  orderChains OrderChainOrder[]
 
   // money
   currency   Currency @relation(fields: [currencyId], references: [id], onDelete: Restrict)
@@ -789,6 +692,105 @@ model Order {
   @@index([currencyId])
   @@index([status])
   @@index([createdAt])
+  @@index([customerId])
+  @@index([supplierId])
+  @@index([logisticsId])
+}
+
+model OrderGoods {
+  /// @DtoRelationIncludeId
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// @DtoRelationIncludeId
+  contentId String
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Restrict)
+
+  // quantity of this good in the order
+  quantity Int @default(1)
+
+  // denormalized snapshot (useful even if price later changes)
+  unitPrice    Float  @default(0)
+  unitCurrency String
+  totalWeight  Float  @default(0)
+  totalVolume  Float  @default(0)
+
+  // additional details for this order-good relationship
+  details Json @default("{}") @db.JsonB
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  @@id([orderId, contentId])
+  @@index([orderId])
+  @@index([contentId])
+}
+
+model OrderChain {
+  /// @DtoCreateHidden
+  id String @id @unique @default(dbgenerated("CONCAT('CHAIN-', gen_random_uuid())"))
+
+  // who created this chain
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  /// @DtoRelationIncludeId
+  userId    String
+
+  // many-to-many relationship with Order
+  orders OrderChainOrder[]
+
+  // chain metadata
+  name        String?
+  description String?
+  status      OrderChainStatus @default(ACTIVE)
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdBy String
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedBy String
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderChainOrder {
+  /// @DtoRelationIncludeId
+  chainId String
+  chain   OrderChain @relation(fields: [chainId], references: [id], onDelete: Cascade)
+  /// @DtoRelationIncludeId
+  orderId String
+  order   Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // ordering of orders within the chain
+  position Int @default(0)
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt DateTime @default(now())
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  updatedAt DateTime @updatedAt
+
+  @@id([chainId, orderId])
+  @@index([chainId])
+  @@index([orderId])
+  @@index([position])
 }
 
 model MembershipPlan {
@@ -906,6 +908,13 @@ enum OrderStatus {
   FAILED
 }
 
+enum OrderChainStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  PENDING
+}
+
 enum PaymentMethod {
   CARD
   BANK_TRANSFER
@@ -927,6 +936,7 @@ enum ContentStatus {
   INACTIVE
   PENDING
   DRAFT
+  DELETED
 }
 
 enum ShipmentStatus {
@@ -953,7 +963,6 @@ enum BookingStatus {
   REFUNDED
   NO_SHOW
   EXPIRED
-  PAID
   PARTIALLY_PAID // Common in B2B (50% deposit)
   DISPUTED // Chargeback initiated
 }
@@ -977,6 +986,7 @@ enum CompanyType {
   MANUFACTURER
   LOGISTIC
   CUSTOMER
+  OTHER
 }
 
 enum BusinessType {
@@ -1008,10 +1018,16 @@ enum Role {
   HR_MANAGER
 
   DRIVER
+  LOGISTIC_MANAGER
+  WAREHOUSE_MANAGER
+  SUPPLY_MANAGER
+  DELIVERY_MANAGER
+  CUSTOMER_MANAGER
   RESERVATIONS_MANAGER
   ACCOUNTANT
 
   CLIENT
+  CUSTOMER
   GUEST
 }
 
