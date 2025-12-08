@@ -133,24 +133,24 @@ model File {
 }
 
 model Currency {
-  id        String   @id @unique
+  id        String     @id @unique
   name      String
-  active    Boolean  @default(true)
-  default   Boolean  @default(false)
-  rate      Float    @default(1)
+  active    Boolean    @default(true)
+  default   Boolean    @default(false)
+  rate      Float      @default(1)
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   createdBy String
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime   @updatedAt
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   updatedBy String
-  Order     Order[]
+  shipment  Shipment[]
 }
 
 model Page {
@@ -268,7 +268,7 @@ model Content {
   packageDepartures Package[]        @relation("PackageDeparture")
   packageArrivals   Package[]        @relation("PackageArrival")
   packageContent    PackageContent[]
-  orderGoods        OrderGoods[]
+  shipmentGoods     ShipmentGoods[]
 
   @@unique([itemId, langId])
   @@unique([companyId, langId, slug])
@@ -361,12 +361,11 @@ model Company {
   updatedBy            String?
   pages                Page[]
   transports           Transport[]
-  orders               Order[]
-  ordersAsCustomer     Order[]               @relation("OrderCustomer")
-  ordersAsSupplier     Order[]               @relation("OrderSupplier")
-  ordersAsLogistics    Order[]               @relation("OrderLogistics")
+  shipments            Shipment[]
+  shipmentsAsCustomer  Shipment[]            @relation("ShipmentCustomer")
+  shipmentsAsSupplier  Shipment[]            @relation("ShipmentSupplier")
+  shipmentsAsLogistics Shipment[]            @relation("ShipmentLogistics")
   companySubscriptions CompanySubscription[]
-  orderChains          OrderChain[]
 }
 
 model User {
@@ -401,13 +400,13 @@ model User {
 
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime    @default(now())
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   createdBy      String
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
-  updatedAt      DateTime     @updatedAt
+  updatedAt      DateTime    @updatedAt
   /// @DtoCreateHidden
   /// @DtoUpdateHidden
   updatedBy      String
@@ -415,9 +414,8 @@ model User {
   licenses       License[]
   files          File[]
   chains         Package[]
-  bookingDrivers Package[]    @relation("BookingDriver")
-  orders         Order[]
-  orderChains    OrderChain[]
+  bookingDrivers Package[]   @relation("BookingDriver")
+  shipments      Shipment[]
 
   @@unique([email, status])
   @@index([id])
@@ -496,7 +494,7 @@ model Package {
   packageContent   PackageContent[]
   User             User?            @relation(fields: [userId], references: [id])
   userId           String?
-  Order            Order[]
+  shipment         Shipment[]
 
   @@index([companyId])
   @@index([contentId])
@@ -625,11 +623,11 @@ model PackageContent {
   @@index([position])
 }
 
-model Order {
+model Shipment {
   /// @DtoCreateHidden
-  id String @id @unique @default(dbgenerated("CONCAT('ORDER-', gen_random_uuid())"))
+  id String @id @unique @default(dbgenerated("CONCAT('SHIPMENT-', gen_random_uuid())"))
 
-  // who and where this order belongs
+  // who and where this shipment belongs
   company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
   /// @DtoRelationIncludeId
   /// @DtoCreateHidden
@@ -642,22 +640,19 @@ model Order {
   packageId String?
   package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
 
-  // explicit company references for order participants
-  customerCompany  Company? @relation("OrderCustomer", fields: [customerId], references: [id], onDelete: Restrict)
+  // explicit company references for shipment participants
+  customerCompany  Company? @relation("ShipmentCustomer", fields: [customerId], references: [id], onDelete: Restrict)
   /// @DtoRelationIncludeId
   customerId       String?
-  supplierCompany  Company? @relation("OrderSupplier", fields: [supplierId], references: [id], onDelete: Restrict)
+  supplierCompany  Company? @relation("ShipmentSupplier", fields: [supplierId], references: [id], onDelete: Restrict)
   /// @DtoRelationIncludeId
   supplierId       String?
-  logisticsCompany Company? @relation("OrderLogistics", fields: [logisticsId], references: [id], onDelete: Restrict)
+  logisticsCompany Company? @relation("ShipmentLogistics", fields: [logisticsId], references: [id], onDelete: Restrict)
   /// @DtoRelationIncludeId
   logisticsId      String?
 
-  // one-to-many relationship with Goods via OrderGoods junction table
-  orderGoods OrderGoods[]
-
-  // many-to-many relationship with OrderChain
-  orderChains OrderChainOrder[]
+  // one-to-many relationship with Goods via ShipmentGoods junction table
+  shipmentGoods ShipmentGoods[]
 
   // money
   currency   Currency @relation(fields: [currencyId], references: [id], onDelete: Restrict)
@@ -669,7 +664,7 @@ model Order {
   total      Float    @default(0)
 
   // status & payment
-  status        OrderStatus    @default(PENDING)
+  status        ShipmentStatus @default(DRAFT)
   paymentMethod PaymentMethod? // optional until chosen
   paymentRef    String? // PSP reference / bank txn code
   notes         String?
@@ -697,15 +692,15 @@ model Order {
   @@index([logisticsId])
 }
 
-model OrderGoods {
+model ShipmentGoods {
   /// @DtoRelationIncludeId
-  orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   /// @DtoRelationIncludeId
-  contentId String
-  content   Content @relation(fields: [contentId], references: [id], onDelete: Restrict)
+  contentId  String
+  content    Content  @relation(fields: [contentId], references: [id], onDelete: Restrict)
 
-  // quantity of this good in the order
+  // quantity of this good in the shipment
   quantity Int @default(1)
 
   // denormalized snapshot (useful even if price later changes)
@@ -714,7 +709,7 @@ model OrderGoods {
   totalWeight  Float  @default(0)
   totalVolume  Float  @default(0)
 
-  // additional details for this order-good relationship
+  // additional details for this shipment-good relationship
   details Json @default("{}") @db.JsonB
 
   /// @DtoCreateHidden
@@ -724,73 +719,9 @@ model OrderGoods {
   /// @DtoUpdateHidden
   updatedAt DateTime @updatedAt
 
-  @@id([orderId, contentId])
-  @@index([orderId])
+  @@id([shipmentId, contentId])
+  @@index([shipmentId])
   @@index([contentId])
-}
-
-model OrderChain {
-  /// @DtoCreateHidden
-  id String @id @unique @default(dbgenerated("CONCAT('CHAIN-', gen_random_uuid())"))
-
-  // who created this chain
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  /// @DtoRelationIncludeId
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  companyId String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Restrict)
-  /// @DtoRelationIncludeId
-  userId    String
-
-  // many-to-many relationship with Order
-  orders OrderChainOrder[]
-
-  // chain metadata
-  name        String?
-  description String?
-  status      OrderChainStatus @default(ACTIVE)
-
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdAt DateTime @default(now())
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdBy String
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedAt DateTime @updatedAt
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedBy String
-
-  @@index([companyId])
-  @@index([userId])
-  @@index([status])
-}
-
-model OrderChainOrder {
-  /// @DtoRelationIncludeId
-  chainId String
-  chain   OrderChain @relation(fields: [chainId], references: [id], onDelete: Cascade)
-  /// @DtoRelationIncludeId
-  orderId String
-  order   Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  // ordering of orders within the chain
-  position Int @default(0)
-
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  createdAt DateTime @default(now())
-  /// @DtoCreateHidden
-  /// @DtoUpdateHidden
-  updatedAt DateTime @updatedAt
-
-  @@id([chainId, orderId])
-  @@index([chainId])
-  @@index([orderId])
-  @@index([position])
 }
 
 model MembershipPlan {
@@ -906,13 +837,6 @@ enum OrderStatus {
   REFUNDED
   CANCELLED
   FAILED
-}
-
-enum OrderChainStatus {
-  ACTIVE
-  COMPLETED
-  CANCELLED
-  PENDING
 }
 
 enum PaymentMethod {
