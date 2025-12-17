@@ -235,6 +235,8 @@ model Content {
   longitude         Float?
   availableQuantity Float?
   price             Float?
+  cargoType         CargoType?
+  hazardClass       HazardClass?
   isPublic          Boolean       @default(false)
   metas             Json          @default("{\"title\": \"\", \"description\": \"\", \"imageId\": \"\", \"type\": \"\"}") @db.JsonB
   details           Json          @default("{\"area\": \"0.0\", \"weight\": \"0.0\", \"volume\": \"0.0\", \"width\": \"0.0\", \"length\": \"0.0\", \"height\": \"0.0\"}") @db.JsonB
@@ -457,6 +459,7 @@ model Transport {
   engineSize        Float
   licensePlate      String            @unique
   type              TransportMode
+  vehicleType       VehicleType
   seats             Int
   color             TransportColor
   steeringWheelSide SteeringWheelSide @default(OTHER)
@@ -587,13 +590,15 @@ model Shipment {
   shipmentGoods ShipmentGoods[]
 
   // money
-  currency   Currency @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  currency     Currency     @relation(fields: [currencyId], references: [id], onDelete: Restrict)
   /// @DtoRelationIncludeId
-  currencyId String
-  subtotal   Float    @default(0)
-  discount   Float    @default(0)
-  tax        Float    @default(0)
-  total      Float    @default(0)
+  currencyId   String
+  subtotal     Float        @default(0)
+  discount     Float        @default(0)
+  tax          Float        @default(0)
+  total        Float        @default(0)
+  shipmentType ShipmentType
+  serviceType  ServiceType?
 
   // status & payment
   status        ShipmentStatus @default(DRAFT)

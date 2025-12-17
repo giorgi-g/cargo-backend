@@ -12,6 +12,7 @@ import {
     UpdateCompanyDto,
 } from "@generated";
 import { CurrentUserDto } from "../users/dtos";
+import { FilterCompanyDto } from "./dtos";
 
 @Injectable()
 export class CompanyService implements OnModuleDestroy {
@@ -43,9 +44,49 @@ export class CompanyService implements OnModuleDestroy {
         });
     }
 
-    async findAll() {
+    async findAll(
+        user: CurrentUserDto,
+        request?: FilterCompanyDto,
+    ): Promise<CompanyEntity[]> {
+        const where: any = {};
+
+        // ROOT users can see all companies, others see only their own or public
+        if (user.roleId !== RoleEnum.ROOT) {
+            where.OR = [
+                { id: user.companyId },
+                { isPublic: true },
+            ];
+        }
+
+        if (request?.companyType != null) {
+            where.companyType = request.companyType;
+        }
+
+        if (request?.businessType != null) {
+            where.businessType = request.businessType;
+        }
+
+        if (request?.isPublic != null) {
+            where.isPublic = request.isPublic;
+        }
+
+        if (request?.countryId != null && !isNaN(request?.countryId)) {
+            where.countryId = request.countryId;
+        }
+
+        if (request?.name != null) {
+            where.name = {
+                contains: request.name,
+                mode: "insensitive",
+            };
+        }
+
         return this.prisma.company.findMany({
+            where,
             orderBy: { createdAt: "desc" },
+            include: {
+                country: true,
+            },
         });
     }
 

@@ -11,6 +11,7 @@ import { CurrentUserDto } from "../users/dtos";
 import { Roles } from "../authorization/roles/decorators";
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 import { GqlAuthGuard } from "../authorization/auth/guards/gql-auth.guard";
+import { FilterCompanyDto } from "./dtos";
 
 @Injectable()
 @Resolver(() => CompanyEntity)
@@ -29,8 +30,11 @@ export class CompanyResolver {
 
     @Query(() => [CompanyEntity])
     @UseGuards(GqlAuthGuard)
-    getCompanies(@CurrentUser() user: CurrentUserDto) {
-        return this.companyService.findAll();
+    getCompanies(
+        @CurrentUser() user: CurrentUserDto,
+        @Args("request", { nullable: true }) request?: FilterCompanyDto,
+    ) {
+        return this.companyService.findAll(user, request);
     }
 
     @Query(() => CompanyEntity)

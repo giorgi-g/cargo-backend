@@ -6,12 +6,14 @@ import {
     Param,
     Post,
     Put,
+    Query,
 } from "@nestjs/common";
 import { CompanyService } from "./company.service";
 import { CreateCompanyDto, RoleEnum, UpdateCompanyDto } from "@generated";
 import { CurrentUser } from "../users/decorators/user.decorator";
 import { CurrentUserDto } from "../users/dtos";
 import { Roles } from "../authorization/roles/decorators";
+import { FilterCompanyDto } from "./dtos";
 
 @Controller("companies")
 export class CompanyController {
@@ -26,9 +28,11 @@ export class CompanyController {
     }
 
     @Get("/companies")
-    @Roles(RoleEnum.ROOT)
-    findAll(@CurrentUser() user: CurrentUserDto) {
-        return this.companyService.findAll();
+    findAll(
+        @CurrentUser() user: CurrentUserDto,
+        @Query() request: FilterCompanyDto,
+    ) {
+        return this.companyService.findAll(user, request);
     }
 
     @Get("/company/:id")
