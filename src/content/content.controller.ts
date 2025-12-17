@@ -9,12 +9,22 @@ import {
     Query,
 } from "@nestjs/common";
 import { ContentService } from "./content.service";
-import { ContentStatusEnum, ContentTypeEnum, RoleEnum } from "@generated";
+import {
+    CargoTypeEnum,
+    ContentStatusEnum,
+    ContentTypeEnum,
+    HazardClassEnum,
+    RoleEnum,
+} from "@generated";
 import { CurrentUser } from "../users/decorators/user.decorator";
 import { CurrentUserDto } from "../users/dtos";
-import { ContentDto, CreateContentInput, FilterContentDto } from "./dtos";
+import {
+    ContentDto,
+    CreateContentInput,
+    FilterContentDto,
+    UpdateContentInput,
+} from "./dtos";
 import { Roles } from "../authorization/roles/decorators";
-import { UpdateContentInput } from "./dtos/update-content.input";
 
 @Controller("content")
 export class ContentController {
@@ -52,10 +62,13 @@ export class ContentController {
         @Query("title") title?: string,
         @Query("slug") slug?: string,
         @Query("statuses") statuses?: ContentStatusEnum[],
-        @Query("pageIds") pageIds?: number[],
+        @Query("pageIds") pageIds?: string[],
         @Query("cityId") cityId?: number,
         @Query("startDate") startDate?: Date,
         @Query("endDate") endDate?: Date,
+        @Query("cargoType") cargoType?: CargoTypeEnum,
+        @Query("hazardClass") hazardClass?: HazardClassEnum,
+        @Query("isPublic") isPublic?: boolean,
     ) {
         const request: FilterContentDto = {
             langId,
@@ -67,6 +80,9 @@ export class ContentController {
             cityId,
             startDate: startDate ? startDate.toISOString() : null,
             endDate: endDate ? endDate.toISOString() : null,
+            cargoType,
+            hazardClass,
+            isPublic,
         };
         return this.contentService.findAll(user, request);
     }

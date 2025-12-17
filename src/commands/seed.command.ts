@@ -46,7 +46,7 @@ export class SeedCommand extends CommandRunner {
                     email: "admin@rubicon.ge",
                     phone: "+995557526674",
                     address: "E.Mindeli 13a",
-                    companyType: BusinessTypeEnum.LIMITED_LIABILITY_COMPANY,
+                    businessType: BusinessTypeEnum.LIMITED_LIABILITY_COMPANY,
                     countryId: country.id,
                 },
             });

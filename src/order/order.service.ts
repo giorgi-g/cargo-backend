@@ -1,14 +1,12 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
 import {
-    CreateOrderDto,
-    OrderEntity,
-    OrderInput,
-    OrderResponse,
-    UpdateOrderDto,
-} from "@generated";
+    Injectable,
+    NotFoundException,
+    OnModuleDestroy,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateOrderDto, OrderEntity, OrderResponse, UpdateOrderDto } from "@generated";
 import { CurrentUserDto } from "../users/dtos";
-import { pagination } from "@utils";
+import { FilterOrderDto } from "./dtos";
 
 @Injectable()
 export class OrderService implements OnModuleDestroy {
@@ -33,44 +31,83 @@ export class OrderService implements OnModuleDestroy {
                 user: true,
                 company: true,
                 currency: true,
+                orderShipments: {
+                    include: {
+                        shipment: true,
+                    },
+                },
             },
         });
     }
 
     async findAll(
         user: CurrentUserDto,
-        request: OrderInput,
+        request: FilterOrderDto,
     ): Promise<OrderResponse> {
         const page = Number(request.page) || 1;
         const size = Number(request.size) || 10;
-        const { skip, take } = pagination(request);
+        const skip = (page - 1) * size;
 
         const where: any = {
             companyId: user.companyId,
-
-            // simple filters (you can expand with all those *List and range fields if you like)
-            ...(request.id && { id: request.id }),
-            ...(request.idList && { id: { in: request.idList } }),
-            ...(request.status && { status: request.status }),
-            ...(request.statusList && { status: { in: request.statusList } }),
-            ...(request.userId && { userId: request.userId }),
-            ...(request.userIdList && { userId: { in: request.userIdList } }),
-            ...(request.currencyId && { currencyId: request.currencyId }),
-            ...(request.currencyIdList && {
-                currencyId: { in: request.currencyIdList },
-            }),
         };
+
+        if (request.id) {
+            where.id = request.id;
+        }
+
+        if (request.status) {
+            where.status = request.status;
+        }
+
+        if (request.userId) {
+            where.userId = request.userId;
+        }
+
+        if (request.currencyId) {
+            where.currencyId = request.currencyId;
+        }
+
+        if (request.paymentMethod) {
+            where.paymentMethod = request.paymentMethod;
+        }
+
+        if (request.startDate) {
+            where.createdAt = {
+                ...where.createdAt,
+                gte: new Date(request.startDate),
+            };
+        }
+
+        if (request.endDate) {
+            where.createdAt = {
+                ...where.createdAt,
+                lte: new Date(request.endDate),
+            };
+        }
+
+        if (request.notes) {
+            where.notes = {
+                contains: request.notes,
+                mode: "insensitive",
+            };
+        }
 
         const [content, totalItems] = await Promise.all([
             this.prisma.order.findMany({
                 where,
                 skip,
-                take,
+                take: size,
                 orderBy: { createdAt: "desc" },
                 include: {
                     user: true,
                     company: true,
                     currency: true,
+                    orderShipments: {
+                        include: {
+                            shipment: true,
+                        },
+                    },
                 },
             }),
             this.prisma.order.count({ where }),
@@ -91,14 +128,25 @@ export class OrderService implements OnModuleDestroy {
         id: string,
         user: CurrentUserDto,
     ): Promise<OrderEntity | null> {
-        return this.prisma.order.findFirst({
+        const order = await this.prisma.order.findFirst({
             where: { id, companyId: user.companyId },
             include: {
                 user: true,
                 company: true,
                 currency: true,
+                orderShipments: {
+                    include: {
+                        shipment: true,
+                    },
+                },
             },
         });
+
+        if (!order) {
+            throw new NotFoundException(`Order with ID ${id} not found`);
+        }
+
+        return order;
     }
 
     async update(
@@ -106,8 +154,11 @@ export class OrderService implements OnModuleDestroy {
         data: UpdateOrderDto,
         user: CurrentUserDto,
     ): Promise<OrderEntity> {
+        // Verify order exists and belongs to user's company
+        await this.findOne(id, user);
+
         return this.prisma.order.update({
-            where: { id },
+            where: { id, companyId: user.companyId },
             data: {
                 ...data,
                 updatedBy: user.id,
@@ -116,17 +167,30 @@ export class OrderService implements OnModuleDestroy {
                 user: true,
                 company: true,
                 currency: true,
+                orderShipments: {
+                    include: {
+                        shipment: true,
+                    },
+                },
             },
         });
     }
 
     async remove(id: string, user: CurrentUserDto): Promise<OrderEntity> {
+        // Verify order exists and belongs to user's company
+        await this.findOne(id, user);
+
         return this.prisma.order.delete({
             where: { id, companyId: user.companyId },
             include: {
                 user: true,
                 company: true,
                 currency: true,
+                orderShipments: {
+                    include: {
+                        shipment: true,
+                    },
+                },
             },
         });
     }

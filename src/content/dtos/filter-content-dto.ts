@@ -1,7 +1,18 @@
-import { ContentStatus, ContentType } from "../../prisma-client";
+import {
+    CargoType,
+    ContentStatus,
+    ContentType,
+    HazardClass,
+} from "../../prisma-client";
 import { ApiProperty } from "@nestjs/swagger";
 import { Field, InputType, Int } from "@nestjs/graphql";
-import { IsDateString, IsInt, IsNotEmpty, IsOptional } from "class-validator";
+import {
+    IsBoolean,
+    IsDateString,
+    IsInt,
+    IsNotEmpty,
+    IsOptional,
+} from "class-validator";
 
 @InputType()
 export class FilterContentDto {
@@ -40,17 +51,16 @@ export class FilterContentDto {
     statuses?: ContentStatus[];
 
     @ApiProperty({
-        type: "integer",
-        format: "int32",
+        type: "string",
         required: false,
         nullable: true,
         isArray: true,
     })
-    @Field(() => [Int], {
+    @Field(() => [String], {
         nullable: true,
     })
     @IsOptional()
-    pageIds?: number[];
+    pageIds?: string[];
 
     @ApiProperty({
         type: "string",
@@ -81,8 +91,36 @@ export class FilterContentDto {
     @ApiProperty({
         type: "integer",
         format: "int32",
+        required: false,
+        nullable: true,
     })
-    @Field(() => Int)
+    @Field(() => Int, { nullable: true })
     @IsOptional()
+    @IsInt()
     cityId?: number;
+
+    @ApiProperty({
+        enum: CargoType,
+        nullable: true,
+    })
+    @Field(() => CargoType, { nullable: true })
+    @IsOptional()
+    cargoType?: CargoType;
+
+    @ApiProperty({
+        enum: HazardClass,
+        nullable: true,
+    })
+    @Field(() => HazardClass, { nullable: true })
+    @IsOptional()
+    hazardClass?: HazardClass;
+
+    @ApiProperty({
+        type: "boolean",
+        nullable: true,
+    })
+    @Field(() => Boolean, { nullable: true })
+    @IsOptional()
+    @IsBoolean()
+    isPublic?: boolean;
 }

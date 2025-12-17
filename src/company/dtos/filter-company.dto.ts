@@ -48,4 +48,23 @@ export class FilterCompanyDto {
     @IsOptional()
     @IsString()
     name?: string;
+
+    @ApiProperty({
+        type: "string",
+        nullable: true,
+    })
+    @Field(() => String, { nullable: true })
+    @IsOptional()
+    @IsString()
+    email?: string;
+
+    @ApiProperty({
+        type: "string",
+        nullable: true,
+        description: "Filter by parent company ID",
+    })
+    @Field(() => String, { nullable: true })
+    @IsOptional()
+    @IsString()
+    parentId?: string;
 }

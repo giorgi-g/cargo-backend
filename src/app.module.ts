@@ -24,13 +24,13 @@ import { CurrencyModule } from "./currency/currency.module";
 import { CountryModule } from "./country/country.module";
 import { PageModule } from "./page/page.module";
 import { ContentModule } from "./content/content.module";
-import { PackageModule } from "./package/package.module";
 import { S3Module } from "nestjs-s3";
 import { CommandsModule } from "./commands/commands.module";
 import { TransportModule } from "./transport/transport.module";
 import { LicenseModule } from "./license/license.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { OrderModule } from "./order/order.module";
+import { ShipmentModule } from "./shipment/shipment.module";
 
 @Module({
     imports: [
@@ -81,7 +81,6 @@ import { OrderModule } from "./order/order.module";
         CountryModule,
         PageModule,
         ContentModule,
-        PackageModule,
         OrderModule,
         TransportModule,
         LicenseModule,

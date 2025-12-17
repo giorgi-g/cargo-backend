@@ -17,26 +17,25 @@ export class DashboardService {
     async info({ companyId }: CurrentUserDto): Promise<DashboardInfoDto> {
         return {
             drivers: await this.userService.count(companyId, RoleEnum.DRIVER),
-            guides: await this.userService.count(companyId, RoleEnum.GUIDE),
+            logisticManagers: await this.userService.count(
+                companyId,
+                RoleEnum.LOGISTIC_MANAGER,
+            ),
             destinations: await this.contentService.count(
                 companyId,
                 ContentTypeEnum.DESTINATION,
             ),
-            tours: await this.contentService.count(
+            goods: await this.contentService.count(
                 companyId,
-                ContentTypeEnum.TOUR,
+                ContentTypeEnum.GOODS,
             ),
             transfers: await this.contentService.count(
                 companyId,
                 ContentTypeEnum.TRANSFER,
             ),
-            accommodations: await this.contentService.count(
+            services: await this.contentService.count(
                 companyId,
-                ContentTypeEnum.ACCOMMODATION,
-            ),
-            cafes: await this.contentService.count(
-                companyId,
-                ContentTypeEnum.CAFE,
+                ContentTypeEnum.SERVICE,
             ),
             files: await this.fileService.count(companyId),
         };

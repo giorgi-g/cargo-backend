@@ -1,39 +1,40 @@
 import { Injectable, UseGuards } from "@nestjs/common";
 import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 import {
-    CreateOrderDto,
-    OrderEntity,
-    OrderResponse,
+    CreateShipmentDto,
+    ShipmentEntity,
+    ShipmentResponse,
     RoleEnum,
-    UpdateOrderDto,
+    UpdateShipmentDto,
 } from "@generated";
 import { CurrentUser } from "../users/decorators/user.decorator";
 import { CurrentUserDto } from "../users/dtos";
 import { GqlAuthGuard } from "../authorization/auth/guards/gql-auth.guard";
-import { OrderService } from "./order.service";
+import { ShipmentService } from "./shipment.service";
 import { Roles } from "../authorization/roles/decorators";
-import { FilterOrderDto } from "./dtos";
+import { FilterShipmentDto } from "./dtos";
 
 @Injectable()
-@Resolver(() => OrderEntity)
-export class OrderResolver {
-    constructor(private readonly orderService: OrderService) {}
+@Resolver(() => ShipmentEntity)
+export class ShipmentResolver {
+    constructor(private readonly shipmentService: ShipmentService) {}
 
     @Roles(
         RoleEnum.ROOT,
         RoleEnum.ADMIN,
         RoleEnum.GENERAL_MANAGER,
         RoleEnum.DIRECTOR,
-        RoleEnum.SALES_MANAGER,
         RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
     )
-    @Mutation(() => OrderEntity)
+    @Mutation(() => ShipmentEntity)
     @UseGuards(GqlAuthGuard)
-    createOrder(
-        @Args("request") request: CreateOrderDto,
+    createShipment(
+        @Args("request") request: CreateShipmentDto,
         @CurrentUser() user: CurrentUserDto,
     ) {
-        return this.orderService.create(request, user);
+        return this.shipmentService.create(request, user);
     }
 
     @Roles(
@@ -41,17 +42,19 @@ export class OrderResolver {
         RoleEnum.ADMIN,
         RoleEnum.GENERAL_MANAGER,
         RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
         RoleEnum.SALES_MANAGER,
         RoleEnum.ACCOUNTANT,
-        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DRIVER,
     )
-    @Query(() => OrderResponse)
+    @Query(() => ShipmentResponse)
     @UseGuards(GqlAuthGuard)
-    findOrders(
-        @Args("request") request: FilterOrderDto,
+    findShipments(
+        @Args("request") request: FilterShipmentDto,
         @CurrentUser() user: CurrentUserDto,
     ) {
-        return this.orderService.findAll(user, request);
+        return this.shipmentService.findAll(user, request);
     }
 
     @Roles(
@@ -59,37 +62,47 @@ export class OrderResolver {
         RoleEnum.ADMIN,
         RoleEnum.GENERAL_MANAGER,
         RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
         RoleEnum.SALES_MANAGER,
         RoleEnum.ACCOUNTANT,
-        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DRIVER,
     )
-    @Query(() => OrderEntity, { nullable: true })
+    @Query(() => ShipmentEntity, { nullable: true })
     @UseGuards(GqlAuthGuard)
-    findOrder(@Args("id") id: string, @CurrentUser() user: CurrentUserDto) {
-        return this.orderService.findOne(id, user);
-    }
-
-    @Roles(
-        RoleEnum.ROOT,
-        RoleEnum.ADMIN,
-        RoleEnum.GENERAL_MANAGER,
-        RoleEnum.DIRECTOR,
-        RoleEnum.SALES_MANAGER,
-    )
-    @Mutation(() => OrderEntity)
-    @UseGuards(GqlAuthGuard)
-    updateOrder(
+    findShipment(
         @Args("id") id: string,
-        @Args("request") request: UpdateOrderDto,
         @CurrentUser() user: CurrentUserDto,
     ) {
-        return this.orderService.update(id, request, user);
+        return this.shipmentService.findOne(id, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Mutation(() => ShipmentEntity)
+    @UseGuards(GqlAuthGuard)
+    updateShipment(
+        @Args("id") id: string,
+        @Args("request") request: UpdateShipmentDto,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.update(id, request, user);
     }
 
     @Roles(RoleEnum.ROOT, RoleEnum.ADMIN, RoleEnum.GENERAL_MANAGER)
-    @Mutation(() => OrderEntity)
+    @Mutation(() => ShipmentEntity)
     @UseGuards(GqlAuthGuard)
-    deleteOrder(@Args("id") id: string, @CurrentUser() user: CurrentUserDto) {
-        return this.orderService.remove(id, user);
+    deleteShipment(
+        @Args("id") id: string,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.remove(id, user);
     }
 }

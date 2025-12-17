@@ -39,8 +39,11 @@ export class CompanyResolver {
 
     @Query(() => CompanyEntity)
     @UseGuards(GqlAuthGuard)
-    getCompanyById(@Args("id") id: string) {
-        return this.companyService.findOne(id);
+    getCompanyById(
+        @Args("id") id: string,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.companyService.findOne(id, user);
     }
 
     @Mutation(() => CompanyEntity)
@@ -57,6 +60,6 @@ export class CompanyResolver {
     @UseGuards(GqlAuthGuard)
     @Roles(RoleEnum.ROOT)
     deleteCompany(@CurrentUser() user: CurrentUserDto, @Args("id") id: string) {
-        return this.companyService.delete(id, user.companyId);
+        return this.companyService.delete(id, user);
     }
 }

@@ -52,10 +52,7 @@ export class CompanyService implements OnModuleDestroy {
 
         // ROOT users can see all companies, others see only their own or public
         if (user.roleId !== RoleEnum.ROOT) {
-            where.OR = [
-                { id: user.companyId },
-                { isPublic: true },
-            ];
+            where.OR = [{ id: user.companyId }, { isPublic: true }];
         }
 
         if (request?.companyType != null) {
@@ -81,11 +78,24 @@ export class CompanyService implements OnModuleDestroy {
             };
         }
 
+        if (request?.email != null) {
+            where.email = {
+                contains: request.email,
+                mode: "insensitive",
+            };
+        }
+
+        if (request?.parentId != null) {
+            where.parentId = request.parentId;
+        }
+
         return this.prisma.company.findMany({
             where,
             orderBy: { createdAt: "desc" },
             include: {
                 country: true,
+                parent: true,
+                children: true,
             },
         });
     }
@@ -96,11 +106,29 @@ export class CompanyService implements OnModuleDestroy {
         });
     }
 
-    async findOne(id: string): Promise<CompanyEntity> {
-        const company = await this.prisma.company.findUnique({ where: { id } });
+    async findOne(id: string, user?: CurrentUserDto): Promise<CompanyEntity> {
+        const company = await this.prisma.company.findUnique({
+            where: { id },
+            include: {
+                country: true,
+                parent: true,
+                children: true,
+            },
+        });
 
-        if (!company)
+        if (!company) {
             throw new NotFoundException(`Company with ID ${id} not found`);
+        }
+
+        // Non-ROOT users can only view their own company or public companies
+        if (
+            user &&
+            user.roleId !== RoleEnum.ROOT &&
+            company.id !== user.companyId &&
+            !company.isPublic
+        ) {
+            throw new BadRequestException("Access denied to this company");
+        }
 
         return company;
     }
@@ -120,8 +148,16 @@ export class CompanyService implements OnModuleDestroy {
         });
     }
 
-    async delete(id: string, companyId: string) {
-        this.compareCompanyIds(id, companyId);
+    async delete(id: string, user: CurrentUserDto) {
+        // Only ROOT can delete companies
+        if (user.roleId !== RoleEnum.ROOT) {
+            throw new BadRequestException("Only ROOT users can delete companies");
+        }
+
+        // Prevent deleting own company
+        if (id === user.companyId) {
+            throw new BadRequestException("Cannot delete your own company");
+        }
 
         await this.findOne(id);
         return this.prisma.company.delete({ where: { id } });

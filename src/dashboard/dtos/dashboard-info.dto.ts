@@ -6,22 +6,19 @@ export class DashboardInfoDto {
     drivers: number;
 
     @Field(() => Int)
-    guides: number;
+    logisticManagers: number;
 
     @Field(() => Int)
     destinations: number;
 
     @Field(() => Int)
-    tours: number;
+    goods: number;
 
     @Field(() => Int)
     transfers: number;
 
     @Field(() => Int)
-    accommodations: number;
-
-    @Field(() => Int)
-    cafes: number;
+    services: number;
 
     @Field(() => Int)
     files: number;
