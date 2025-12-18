@@ -86,6 +86,7 @@ import { ShipmentModule } from "./shipment/shipment.module";
         LicenseModule,
         CommandsModule,
         DashboardModule,
+        ShipmentModule,
     ],
     providers: [
         // {

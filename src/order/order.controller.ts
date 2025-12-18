@@ -20,7 +20,12 @@ import { CurrentUser } from "../users/decorators/user.decorator";
 import { CurrentUserDto } from "../users/dtos";
 import { OrderService } from "./order.service";
 import { Roles } from "../authorization/roles/decorators";
-import { FilterOrderDto } from "./dtos";
+import {
+    FilterOrderDto,
+    AddOrderShipmentDto,
+    UpdateOrderShipmentDto,
+    RemoveOrderShipmentDto,
+} from "./dtos";
 
 @Controller("orders")
 export class OrderController {
@@ -115,5 +120,117 @@ export class OrderController {
     @Delete("/order/:id")
     remove(@Param("id") id: string, @CurrentUser() user: CurrentUserDto) {
         return this.orderService.remove(id, user);
+    }
+
+    // ==================== OrderShipment Management ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.SALES_MANAGER,
+        RoleEnum.ACCOUNTANT,
+        RoleEnum.LOGISTIC_MANAGER,
+    )
+    @Get("/order/:id/shipments")
+    getOrderShipments(
+        @Param("id") id: string,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.orderService.getOrderShipments(id, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.SALES_MANAGER,
+        RoleEnum.LOGISTIC_MANAGER,
+    )
+    @Post("/order/:id/shipments")
+    addShipments(
+        @Param("id") id: string,
+        @Body() shipments: AddOrderShipmentDto[],
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.orderService.addShipments(id, shipments, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.SALES_MANAGER,
+        RoleEnum.LOGISTIC_MANAGER,
+    )
+    @Put("/order/:id/shipments")
+    updateShipmentPosition(
+        @Param("id") id: string,
+        @Body() data: UpdateOrderShipmentDto,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.orderService.updateShipmentPosition(id, data, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.SALES_MANAGER,
+        RoleEnum.LOGISTIC_MANAGER,
+    )
+    @Delete("/order/:id/shipments")
+    removeShipment(
+        @Param("id") id: string,
+        @Body() data: RemoveOrderShipmentDto,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.orderService.removeShipment(id, data, user);
+    }
+
+    // ==================== Status Management ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Put("/order/:id/status")
+    updateStatus(
+        @Param("id") id: string,
+        @Body() body: { status: OrderStatusEnum },
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.orderService.updateStatus(id, body.status, user);
+    }
+
+    // ==================== Payment Processing ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.SALES_MANAGER,
+        RoleEnum.ACCOUNTANT,
+    )
+    @Put("/order/:id/payment")
+    processPayment(
+        @Param("id") id: string,
+        @Body() body: { paymentMethod: PaymentMethodEnum; paymentRef?: string },
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.orderService.processPayment(
+            id,
+            body.paymentMethod,
+            body.paymentRef || null,
+            user,
+        );
     }
 }

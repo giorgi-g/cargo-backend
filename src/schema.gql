@@ -15,19 +15,6 @@ enum BillingInterval {
   QUARTERLY
 }
 
-enum BookingStatus {
-  CANCELLED
-  COMPLETED
-  CONFIRMED
-  EXPIRED
-  FAILED
-  IN_PROGRESS
-  NO_SHOW
-  PAID
-  PENDING
-  REFUNDED
-}
-
 enum BusinessType {
   B_CORP
   CLOSE_CORPORATION
@@ -48,24 +35,24 @@ enum BusinessType {
   S_CORP
 }
 
-enum CarInteriorMaterial {
-  ALCANTARA
-  CARBON_FIBER_TRIM
-  GENUINE_LEATHER
-  METAL_TRIM
-  MICROFIBER
-  ORGANIC_TEXTILES
-  OTHER
-  RECYCLED_MATERIALS
-  SUEDE
-  SYNTHETIC_LEATHER
-  VEGAN_LEATHER
+enum CargoType {
+  DRY_BULK
+  FRAGILE
+  GENERAL_MERCHANDISE
+  HAZARDOUS
+  HIGH_VALUE
+  LIQUID_BULK
+  LIVE_ANIMALS
+  OVERSIZED
+  PERISHABLE
 }
 
 type CompanyEntity {
   address: String!
+  businessType: BusinessType!
+  children: [CompanyEntity!]!
   companySubscriptions: [CompanySubscriptionEntity!]!
-  companyType: BusinessType!
+  companyType: CompanyType!
   country: CountryEntity!
   countryId: Int!
   createdAt: DateTime!
@@ -74,11 +61,17 @@ type CompanyEntity {
   email: String!
   files: [FileEntity!]!
   id: String!
+  isPublic: Boolean!
   name: String!
   orders: [OrderEntity!]!
-  packages: [PackageEntity!]!
   pages: [PageEntity!]!
+  parent: CompanyEntity
+  parentId: String
   phone: String!
+  shipments: [ShipmentEntity!]!
+  shipmentsAsCustomer: [ShipmentEntity!]!
+  shipmentsAsLogistics: [ShipmentEntity!]!
+  shipmentsAsSupplier: [ShipmentEntity!]!
   transports: [TransportEntity!]!
   updatedAt: DateTime!
   updatedBy: String
@@ -110,6 +103,14 @@ type CompanySubscriptionEntity {
   updatedBy: String!
 }
 
+enum CompanyType {
+  CUSTOMER
+  LOGISTIC
+  MANUFACTURER
+  OTHER
+  SUPPLIER
+}
+
 input ContentCompanyIdLangIdSlugUniqueInputDto {
   companyId: String!
   langId: Int!
@@ -117,44 +118,29 @@ input ContentCompanyIdLangIdSlugUniqueInputDto {
 }
 
 type ContentDetailsDto {
-  additionalPhoneNumber: String
-  address: String
-  cancellationPolicy: String
-  checkInFrom: String
-  checkOutUntil: String
-  childrenAllowed: Boolean
-  email: String
-  mealPlan: String
-  petsAllowed: Boolean
-  phoneNumber: String
-  postalCode: String
-  propertyType: String
-  ratePolicy: String
-  smokingAllowed: Boolean
+  area: Float
+  height: Float
+  length: Float
+  volume: Float
+  weight: Float
+  width: Float
 }
 
 input ContentDetailsInput {
-  additionalPhoneNumber: String
-  address: String
-  cancellationPolicy: String
-  checkInFrom: String
-  checkOutUntil: String
-  childrenAllowed: Boolean
-  email: String
-  mealPlan: String
-  petsAllowed: Boolean
-  phoneNumber: String
-  postalCode: String
-  propertyType: String
-  ratePolicy: String
-  smokingAllowed: Boolean
+  area: Float
+  height: Float
+  length: Float
+  volume: Float
+  weight: Float
+  width: Float
 }
 
 type ContentDto {
-  Order: [OrderEntity!]!
   amenities: String!
+  availableQuantity: Float
   backgroundId: String
   backgroundImage: FileEntity
+  cargoType: CargoType
   cityId: Int!
   companyId: String!
   contentFiles: [ContentFilesEntity!]!
@@ -164,27 +150,27 @@ type ContentDto {
   coverImage: FileEntity
   createdAt: DateTime!
   createdBy: String!
+  deletedAt: DateTime
   description: String
   details: ContentDetailsDto!
   endDate: DateTime
+  hazardClass: HazardClass
   id: String!
   imageId: String
+  isPublic: Boolean!
   itemId: String!
   langId: Int!
   latitude: Float
   longitude: Float
   mainImage: FileEntity
-  maxSeats: Int!
   metas: String!
-  packageArrivals: [PackageEntity!]!
-  packageContent: [PackageContentEntity!]!
-  packageDepartures: [PackageEntity!]!
-  packages: [PackageEntity!]!
   pageContents: [PageContentsEntity!]!
-  prices: [PriceEntity!]!
+  price: Float
   regionId: Int!
+  shipmentArrivals: [ShipmentEntity!]!
+  shipmentDepartures: [ShipmentEntity!]!
+  shipmentGoods: [ShipmentGoodsEntity!]!
   slug: String
-  start: Int!
   startDate: DateTime
   status: ContentStatus!
   text: String
@@ -195,10 +181,11 @@ type ContentDto {
 }
 
 type ContentEntity {
-  Order: [OrderEntity!]!
   amenities: String!
+  availableQuantity: Float
   backgroundId: String
   backgroundImage: FileEntity
+  cargoType: CargoType
   cityId: Int!
   companyId: String!
   contentFiles: [ContentFilesEntity!]!
@@ -208,27 +195,27 @@ type ContentEntity {
   coverImage: FileEntity
   createdAt: DateTime!
   createdBy: String!
+  deletedAt: DateTime
   description: String
   details: String!
   endDate: DateTime
+  hazardClass: HazardClass
   id: String!
   imageId: String
+  isPublic: Boolean!
   itemId: String!
   langId: Int!
   latitude: Float
   longitude: Float
   mainImage: FileEntity
-  maxSeats: Int!
   metas: String!
-  packageArrivals: [PackageEntity!]!
-  packageContent: [PackageContentEntity!]!
-  packageDepartures: [PackageEntity!]!
-  packages: [PackageEntity!]!
   pageContents: [PageContentsEntity!]!
-  prices: [PriceEntity!]!
+  price: Float
   regionId: Int!
+  shipmentArrivals: [ShipmentEntity!]!
+  shipmentDepartures: [ShipmentEntity!]!
+  shipmentGoods: [ShipmentGoodsEntity!]!
   slug: String
-  start: Int!
   startDate: DateTime
   status: ContentStatus!
   text: String
@@ -259,6 +246,7 @@ input ContentItemIdLangIdUniqueInputDto {
 
 enum ContentStatus {
   ACTIVE
+  DELETED
   DRAFT
   INACTIVE
   PENDING
@@ -266,26 +254,22 @@ enum ContentStatus {
 
 enum ContentType {
   ABOUT_US
-  ACCOMMODATION
   BANNER
   BRAND
-  CAFE
   COMPANY
   CONTACTS
   DESTINATION
   FAQ
   FOOTER
   GALLERY
+  GOODS
   HEADER
   HOME
-  HOTEL
   NEWS
-  PACKAGE
   SERVICE
   SLIDER
   TEAM
   TEXT
-  TOUR
   TRANSFER
   VACANCY
 }
@@ -316,26 +300,31 @@ type CountryEntity {
 
 input CreateCompanyDto {
   address: String!
-  companyType: BusinessType! = OTHER
+  businessType: BusinessType! = OTHER
+  companyType: CompanyType! = OTHER
   countryId: Int!
   email: String!
+  isPublic: Boolean! = false
   name: String!
   phone: String!
 }
 
 input CreateContentInput {
-  amenities: [String!]!
+  availableQuantity: Float
+  cargoType: CargoType
   cityId: Int!
   contentType: ContentType!
   countryId: Int!
   description: String
-  details: ContentDetailsInput!
+  details: ContentDetailsInput
   endDate: String
+  hazardClass: HazardClass
+  isPublic: Boolean! = false
   itemId: String!
   langId: Int!
   latitude: Float
   longitude: Float
-  maxSeats: Int! = 0
+  price: Float
   regionId: Int!
   slug: String
   startDate: String
@@ -408,20 +397,6 @@ input CreateOrderDto {
   userId: String!
 }
 
-input CreatePackageDto {
-  additionalProfit: Float
-  arrivalId: String!
-  contentId: String!
-  departureId: String!
-  driverId: String
-  endDate: String!
-  guideId: String
-  occupancy: Int!
-  priceId: String!
-  startDate: String!
-  status: BookingStatus! = IN_PROGRESS
-}
-
 input CreatePageDto {
   backgroundId: String
   coverId: String
@@ -442,20 +417,44 @@ input CreatePageDto {
   type: ContentType!
 }
 
+input CreateShipmentDto {
+  approximateEndDate: String
+  approximateStartDate: String
+  arrivalId: String!
+  currencyId: String!
+  customerId: String
+  departureId: String!
+  driverId: String
+  endDate: String
+  logisticsId: String
+  notes: String
+  paymentMethod: PaymentMethod
+  paymentRef: String
+  serviceType: ServiceType
+  shipmentType: ShipmentType!
+  startDate: String
+  status: ShipmentStatus! = DRAFT
+  supplierId: String
+  userId: String!
+}
+
 input CreateTransportInput {
   airbags: Int
+  area: Float!
   brand: TransportBrands!
+  brandName: String
+  carryWeight: Float!
   color: TransportColor!
   cylinders: Int
   engineSize: Float!
-  features: [TransportFeature!]!
   fileIds: [FileEntityInput!]! = []
+  fuelConsumption: Float
   fuelType: FuelType!
+  height: Float!
   inspectionValidUntil: String!
   insuranceValidUntil: String
-  interiorColor: TransportColor!
-  interiorMaterial: CarInteriorMaterial! = OTHER
   isTurbo: Boolean! = false
+  length: Float!
   licensePlate: String!
   mileage: Float
   model: String!
@@ -463,10 +462,14 @@ input CreateTransportInput {
   pricePerDay: Float
   pricePerKm: Float
   seats: Int!
-  steeringWheelSide: SteeringWheelSide! = LEFT
+  steeringWheelSide: SteeringWheelSide! = OTHER
   transmission: TransmissionType!
-  type: TransportType!
+  type: TransportMode!
   userId: String
+  vehicleType: VehicleType!
+  volume: Float!
+  weight: Float!
+  width: Float!
   year: Int!
 }
 
@@ -489,27 +492,26 @@ input CreateUserInput {
 }
 
 type CurrencyEntity {
-  Order: [OrderEntity!]!
   active: Boolean!
   createdAt: DateTime!
   createdBy: String!
   default: Boolean!
   id: String!
   name: String!
-  price: [PriceEntity!]!
+  orders: [OrderEntity!]!
   rate: Float!
+  shipment: [ShipmentEntity!]!
   updatedAt: DateTime!
   updatedBy: String!
 }
 
 type DashboardInfoDto {
-  accommodations: Int!
-  cafes: Int!
   destinations: Int!
   drivers: Int!
   files: Int!
-  guides: Int!
-  tours: Int!
+  goods: Int!
+  logisticManagers: Int!
+  services: Int!
   transfers: Int!
 }
 
@@ -519,29 +521,35 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 enum DriverLicenseType {
-  A
-  A1
-  A2
-  AM
   ATPL
-  B
-  B1
-  BE
-  C
-  C1
-  C1E
-  CE
-  D
-  D1
-  D1E
-  DE
+  EU_A
+  EU_A1
+  EU_A2
+  EU_AM
+  EU_B
+  EU_B1
+  EU_BE
+  EU_C
+  EU_C1
+  EU_C1E
+  EU_CE
+  EU_D
+  EU_D1
+  EU_D1E
+  EU_DE
   F
   G
   M
+  OTHER
   PPL
   SAILOR
   SPL
   T
+  US_CLASS_A
+  US_CLASS_B
+  US_CLASS_C
+  US_CLASS_D
+  US_CLASS_M
 }
 
 type FileEntity {
@@ -564,7 +572,6 @@ type FileEntity {
   name: String!
   passportBackImages: [UserEntity!]!
   passportFrontImages: [UserEntity!]!
-  prices: [PriceFileEntity!]!
   profileImage: [UserEntity!]!
   size: String!
   transportFiles: [TransportFilesEntity!]!
@@ -628,16 +635,65 @@ enum FileType {
   XLSX
 }
 
+input FilterCompanyDto {
+  businessType: BusinessType
+  companyType: CompanyType
+  countryId: Int
+  email: String
+  isPublic: Boolean
+  name: String
+  parentId: String
+}
+
 input FilterContentDto {
-  cityId: Int!
+  cargoType: CargoType
+  cityId: Int
   contentType: ContentType!
   endDate: String
+  hazardClass: HazardClass
+  isPublic: Boolean
   langId: Int!
-  pageIds: [Int!]
+  pageIds: [String!]
   slug: String
   startDate: String
   statuses: [ContentStatus!]
   title: String
+}
+
+input FilterOrderDto {
+  currencyId: String
+  endDate: String
+  id: String
+  notes: String
+  page: Int! = 1
+  paymentMethod: PaymentMethod
+  size: Int! = 10
+  startDate: String
+  status: OrderStatus
+  userId: String
+}
+
+input FilterShipmentDto {
+  arrivalId: String
+  createdAtFrom: String
+  createdAtTo: String
+  currencyId: String
+  customerId: String
+  departureId: String
+  driverId: String
+  id: String
+  logisticsId: String
+  notes: String
+  page: Int! = 1
+  paymentMethod: PaymentMethod
+  serviceType: ServiceType
+  shipmentType: ShipmentType
+  size: Int! = 10
+  startDateFrom: String
+  startDateTo: String
+  status: ShipmentStatus
+  supplierId: String
+  userId: String
 }
 
 input FolderCompanyIdParentIdNameUniqueInputDto {
@@ -664,14 +720,24 @@ type FolderEntity {
 }
 
 enum FuelType {
+  AVGAS
+  BIO_DIESEL
   CNG
   DIESEL
   ELECTRIC
+  HFO
   HYBRID
+  HYBRID_DIESEL
   HYDROGEN
+  JET_A1
+  JET_B
+  LNG
   LPG
+  MGO
   OTHER
   PETROL
+  SAF
+  VLSFO
 }
 
 input GetUsersInput {
@@ -683,6 +749,18 @@ input GetUsersInput {
   personalId: String
   roles: [Role!]! = []
   statuses: [UserStatus!]! = []
+}
+
+enum HazardClass {
+  CORROSIVES
+  EXPLOSIVES
+  FLAMMABLE_LIQUIDS
+  FLAMMABLE_SOLIDS
+  GASES
+  MISCELLANEOUS_DANGEROUS
+  OXIDIZING_SUBSTANCES
+  RADIOACTIVE
+  TOXIC_INFECTIOUS
 }
 
 type HealthDto {
@@ -716,17 +794,6 @@ type LicenseEntity {
   user: UserEntity
   userId: String
   validUntil: DateTime!
-}
-
-enum MealType {
-  AI
-  A_LA_CARTE
-  BREAKFAST
-  FB
-  HB_WITH_DINNER
-  HB_WITH_LUNCH
-  NONE
-  TABLE_D_HOTE
 }
 
 type MembershipPlanEntity {
@@ -767,8 +834,8 @@ type Mutation {
   createLanguage(request: CreateLanguageDto!): LanguageEntity!
   createLicense(input: CreateLicenseInput!, userId: String!): LicenseEntity!
   createOrder(request: CreateOrderDto!): OrderEntity!
-  createPackage(request: CreatePackageDto!): PackageEntity!
   createPage(request: CreatePageDto!): PageEntity!
+  createShipment(request: CreateShipmentDto!): ShipmentEntity!
   createTransport(input: CreateTransportInput!, userId: String!): TransportEntity!
   createUser(request: CreateUserInput!): UserDto!
   deleteCompany(id: String!): CompanyEntity!
@@ -778,8 +845,8 @@ type Mutation {
   deleteFolder(id: Float!): FolderEntity!
   deleteLanguage(id: Float!): LanguageEntity!
   deleteOrder(id: String!): OrderEntity!
-  deletePackage(id: String!): PackageEntity!
   deletePage(id: String!): PageEntity!
+  deleteShipment(id: String!): ShipmentEntity!
   deleteUser(userId: String!): Boolean!
   findLanguageById(id: Float!): LanguageEntity!
   getDashboardInfo: DashboardInfoDto!
@@ -794,8 +861,8 @@ type Mutation {
   updateFolder(id: Float!, request: UpdateFolderDto!): FolderEntity!
   updateLicense(id: String!, input: UpdateLicenseInput!): LicenseEntity!
   updateOrder(id: String!, request: UpdateOrderDto!): OrderEntity!
-  updatePackage(id: String!, request: UpdatePackageDto!): PackageEntity!
   updatePage(id: String!, request: UpdatePageDto!): PageEntity!
+  updateShipment(id: String!, request: UpdateShipmentDto!): ShipmentEntity!
   updateTransport(id: String!, input: UpdateTransportInput!): TransportEntity!
   updateUser(request: UpdateUserInput!, userId: String!): UserDto!
 }
@@ -803,8 +870,6 @@ type Mutation {
 type OrderEntity {
   company: CompanyEntity!
   companyId: String!
-  content: ContentEntity
-  contentId: String
   createdAt: DateTime!
   createdBy: String!
   currency: CurrencyEntity!
@@ -812,8 +877,7 @@ type OrderEntity {
   discount: Float!
   id: String!
   notes: String
-  package: PackageEntity
-  packageId: String
+  orderShipments: [OrderShipmentEntity!]!
   paymentMethod: PaymentMethod
   paymentRef: String
   status: OrderStatus!
@@ -826,46 +890,28 @@ type OrderEntity {
   userId: String!
 }
 
-input OrderInput {
-  companyId: String
-  companyIdList: [String!]
-  createdAt: DateTime
-  createdBy: String
-  createdByList: [String!]
-  currencyId: String
-  currencyIdList: [String!]
-  discount: Float
-  discountList: [Float!]
-  id: String
-  idList: [String!]
-  notes: String
-  notesList: [String!]
-  page: Int!
-  paymentMethod: PaymentMethod
-  paymentMethodList: [PaymentMethod!]
-  paymentRef: String
-  paymentRefList: [String!]
-  size: Int!
-  status: OrderStatus
-  statusList: [OrderStatus!]
-  subtotal: Float
-  subtotalList: [Float!]
-  tax: Float
-  taxList: [Float!]
-  total: Float
-  totalList: [Float!]
-  updatedBy: String
-  updatedByList: [String!]
-  userId: String
-  userIdList: [String!]
-}
-
 type OrderResponse {
   content: [OrderEntity!]!
   page: Int!
   size: Int!
   totalItems: Int!
   totalPages: Int!
+}
+
+type OrderShipmentEntity {
+  createdAt: DateTime!
+  details: String!
+  order: OrderEntity!
+  orderId: String!
+  position: Int!
+  shipment: ShipmentEntity!
+  shipmentId: String!
+  updatedAt: DateTime!
+}
+
+input OrderShipmentOrderIdShipmentIdUniqueInputDto {
+  orderId: String!
+  shipmentId: String!
 }
 
 enum OrderStatus {
@@ -876,83 +922,6 @@ enum OrderStatus {
   PARTIALLY_REFUNDED
   PENDING
   REFUNDED
-}
-
-type PackageContentEntity {
-  content: ContentEntity!
-  contentId: String!
-  createdAt: DateTime!
-  details: String!
-  package: PackageEntity!
-  packageId: String!
-  position: Int!
-  price: PriceEntity
-  priceId: String
-  quantity: Int!
-  unitCurrency: String!
-  unitPrice: Float!
-  updatedAt: DateTime!
-}
-
-input PackageContentPackageIdContentIdUniqueInputDto {
-  contentId: String!
-  packageId: String!
-}
-
-type PackageEntity {
-  Order: [OrderEntity!]!
-  User: UserEntity
-  additionalProfit: Float
-  arrival: ContentEntity!
-  arrivalId: String!
-  company: CompanyEntity!
-  companyId: String!
-  content: ContentEntity!
-  contentId: String!
-  createdAt: DateTime!
-  createdBy: String!
-  departure: ContentEntity!
-  departureId: String!
-  driver: UserEntity
-  driverId: String
-  endDate: DateTime!
-  guide: UserEntity
-  guideId: String
-  id: String!
-  occupancy: Int!
-  packageContent: [PackageContentEntity!]!
-  packageReviews: [PackageReviewEntity!]!
-  price: PriceEntity!
-  priceId: String!
-  startDate: DateTime!
-  status: BookingStatus!
-  totalPrice: Float!
-  updatedAt: DateTime!
-  updatedBy: String!
-  userId: String
-}
-
-type PackageReviewEntity {
-  comment: String
-  createdAt: DateTime!
-  createdBy: String!
-  details: String!
-  id: String!
-  isApproved: Boolean!
-  isPublic: Boolean!
-  package: PackageEntity!
-  packageId: String!
-  rating: Float!
-  reviewer: UserEntity!
-  title: String
-  updatedAt: DateTime!
-  updatedBy: String!
-  userId: String!
-}
-
-input PackageReviewPackageIdUserIdUniqueInputDto {
-  packageId: String!
-  userId: String!
 }
 
 type PageContentsEntity {
@@ -1025,47 +994,6 @@ enum Position {
   TOP
 }
 
-type PriceEntity {
-  PackageContent: [PackageContentEntity!]!
-  content: ContentEntity!
-  contentId: String!
-  createdAt: DateTime!
-  createdBy: String!
-  currency: CurrencyEntity!
-  currencyId: String!
-  details: String!
-  endDate: DateTime
-  files: [PriceFileEntity!]!
-  id: String!
-  infantPrice: Float!
-  maxAdult: Int
-  mealType: MealType!
-  name: String
-  packages: [PackageEntity!]!
-  price: Float!
-  privacy: Boolean!
-  quantity: Int
-  roomType: RoomType!
-  sharing: TransferType!
-  startDate: DateTime
-  updatedAt: DateTime!
-  updatedBy: String!
-}
-
-type PriceFileEntity {
-  createdAt: DateTime!
-  file: FileEntity!
-  fileId: String!
-  price: PriceEntity!
-  priceId: String!
-  updatedAt: DateTime!
-}
-
-input PriceFilePriceIdFileIdUniqueInputDto {
-  fileId: String!
-  priceId: String!
-}
-
 type Query {
   check: HealthDto!
   findContentById(id: String!, langId: Float!): ContentDto
@@ -1082,14 +1010,14 @@ type Query {
   findLicensesByUser(userId: String!): [LicenseEntity!]!
   findOne(id: String!): LicenseEntity!
   findOrder(id: String!): OrderEntity
-  findOrders(request: OrderInput!): OrderResponse!
-  findPackageById(id: String!): PackageEntity!
-  findPackages: [PackageEntity!]!
+  findOrders(request: FilterOrderDto!): OrderResponse!
   findPageById(id: String!): PageEntity!
   findPages: [PageEntity!]!
+  findShipment(id: String!): ShipmentEntity
+  findShipments(request: FilterShipmentDto!): ShipmentResponse!
   findTransport(id: String!): TransportEntity!
   findTransports(input: TransportInput!): [TransportEntity!]!
-  getCompanies: [CompanyEntity!]!
+  getCompanies(request: FilterCompanyDto): [CompanyEntity!]!
   getCompanyById(id: String!): CompanyEntity!
   getProfile: UserEntity!
   getUser(userId: String!): UserDto!
@@ -1101,44 +1029,116 @@ enum Role {
   ACCOUNTANT
   ADMIN
   CLIENT
+  CUSTOMER
+  CUSTOMER_MANAGER
+  DELIVERY_MANAGER
   DIRECTOR
   DRIVER
   GENERAL_MANAGER
   GUEST
-  GUIDE
   HR_MANAGER
+  LOGISTIC_MANAGER
   RESERVATIONS_MANAGER
   ROOT
   SALES_MANAGER
+  SUPPLY_MANAGER
+  WAREHOUSE_MANAGER
 }
 
-enum RoomType {
-  ACCESSIBLE
-  ADJOINING
-  APARTMENT
-  BUNGALOW
-  BUSINESS
-  CONNECTING
-  DELUXE
-  DOUBLE
-  EXECUTIVE_SUITE
-  FAMILY
-  HONEYMOON_SUITE
-  JUNIOR_SUITE
-  KING
-  LOFT
-  MASTER_SUITE
-  NONE
-  PENTHOUSE_SUITE
-  PRESIDENTIAL_SUITE
-  QUAD
-  QUEEN
-  ROYAL_SUITE
-  SINGLE
-  STUDIO
-  SUPERIOR
-  TRIPLE
-  TWIN
+enum ServiceType {
+  DOMESTIC
+  EXPORT
+  IMPORT
+}
+
+type ShipmentEntity {
+  approximateEndDate: DateTime
+  approximateStartDate: DateTime
+  arrival: ContentEntity!
+  arrivalId: String!
+  company: CompanyEntity!
+  companyId: String!
+  createdAt: DateTime!
+  createdBy: String!
+  currency: CurrencyEntity!
+  currencyId: String!
+  customerCompany: CompanyEntity
+  customerId: String
+  departure: ContentEntity!
+  departureId: String!
+  discount: Float!
+  driver: UserEntity
+  driverId: String
+  endDate: DateTime
+  id: String!
+  logisticsCompany: CompanyEntity
+  logisticsId: String
+  notes: String
+  orderShipments: [OrderShipmentEntity!]!
+  paymentMethod: PaymentMethod
+  paymentRef: String
+  serviceType: ServiceType
+  shipmentGoods: [ShipmentGoodsEntity!]!
+  shipmentType: ShipmentType!
+  startDate: DateTime
+  status: ShipmentStatus!
+  subtotal: Float!
+  supplierCompany: CompanyEntity
+  supplierId: String
+  tax: Float!
+  total: Float!
+  updatedAt: DateTime!
+  updatedBy: String!
+  user: UserEntity!
+  userId: String!
+}
+
+type ShipmentGoodsEntity {
+  content: ContentEntity!
+  contentId: String!
+  createdAt: DateTime!
+  details: String!
+  quantity: Int!
+  shipment: ShipmentEntity!
+  shipmentId: String!
+  totalVolume: Float!
+  totalWeight: Float!
+  unitCurrency: String!
+  unitPrice: Float!
+  updatedAt: DateTime!
+}
+
+input ShipmentGoodsShipmentIdContentIdUniqueInputDto {
+  contentId: String!
+  shipmentId: String!
+}
+
+type ShipmentResponse {
+  content: [ShipmentEntity!]!
+  page: Int!
+  size: Int!
+  totalItems: Int!
+  totalPages: Int!
+}
+
+enum ShipmentStatus {
+  AT_DELIVERY
+  AT_PICKUP
+  BOOKED
+  CANCELLED
+  CUSTOMS_HOLD
+  DELIVERED
+  DRAFT
+  IN_TRANSIT
+  PENDING_APPROVAL
+  RETURNED
+}
+
+enum ShipmentType {
+  FCL
+  FTL
+  LCL
+  LTL
 }
 
 input SignInDto {
@@ -1147,7 +1147,9 @@ input SignInDto {
 }
 
 enum SteeringWheelSide {
+  BOTH
   LEFT
+  OTHER
   RIGHT
 }
 
@@ -1159,13 +1161,6 @@ enum SubscriptionStatus {
   TRIALING
 }
 
-enum TransferType {
-  LUXURY
-  NONE
-  PRIVATE
-  SHARED
-}
-
 enum TransmissionType {
   AUTOMATIC
   CVT
@@ -1175,206 +1170,35 @@ enum TransmissionType {
 }
 
 enum TransportBrands {
-  ACURA
-  AION
-  AIQAR
   AIRBUS
-  AIRBUS_HELICOPTERS
-  AITO
-  ALFA_ROMEO
-  AMC
-  ARCFOX
-  ASTON_MARTIN
-  AUDI
-  AUTEL_ROBOTICS
-  AVATR
-  AZIMUT
-  BAYLINER
-  BC_FERRIES
-  BELL
-  BENETTI
-  BENTLEY
-  BMW
+  ANTONOV
   BOEING
-  BOMBARDIER
-  BOSTON_WHALER
-  BRILLIANCE
-  BUGATTI
-  BUICK
-  BYD
-  CADILLAC
-  CAMERON_BALLOONS
-  CAR
-  CARNIVAL_CRUISE
-  CHANGAN
-  CHANGFENG
-  CHAPARRAL
-  CHERY
-  CHEVROLET
-  CHRYSLER
-  CITROEN
-  COSCO
-  CPI
-  DACIA
-  DAEWOO
-  DAGGER
-  DAIHATSU
-  DAMEN_SHIPYARDS
-  DASSAULT_FALCON
-  DATSUN
-  DAYUN
-  DFI
-  DINGLING
-  DJI
-  DM_TELAI
-  DODGE
+  CESSNA
+  DAF
   DONGFENG
-  DS_AUTOMOBILES
-  EMBRAER
-  EXEED
-  FAW
-  FERRARI
-  FERRETTI
-  FIAT
-  FISKER
-  FJORD1
   FORD
-  FORTHING
-  FOTON
-  GAZ
-  GEELY
-  GENESIS
-  GMC
-  GONOW
-  GREAT_WALL
-  GRIFFON_HOVERWORK
-  GULFSTREAM
-  HAFEI
-  HAVAL
-  HIPHI
-  HONDA
-  HONGQI
-  HUAWEI
-  HUAWEI_INSIDE
-  HUMMER
-  HYSTER
-  HYUNDAI
-  IM_MOTORS
-  INCAT
-  INFINITI
-  IRAN_KHODRO
+  FREIGHTLINER
+  FUSO
+  GREAT_DANE
+  HINO
+  INTERNATIONAL
   ISUZU
   IVECO
-  IZH
-  JAC
-  JAGUAR
-  JEEP
-  JETOUR
-  KARSAN
-  KAWASAKI
-  KIA
-  KUBICEK_BALLOONS
-  LAMBORGHINI
-  LANCIA
-  LAND_ROVER
-  LEAPMOTOR
-  LEXUS
-  LIFAN
-  LINCOLN
-  LINDE
-  LIXIANG
-  LOCKHEED_MARTIN
-  LONKING
-  LOTUS
-  LTI
-  LYNK_AND_CO
-  MAD_RIVER
-  MAERSK
-  MAHINDRA
-  MASERATI
-  MAXUS
-  MAYBACH
-  MAZDA
-  MCLAREN
+  KENWORTH
+  KRONE
+  MACK
+  MAN
   MERCEDES_BENZ
-  MERCURY
-  MG
-  MINI
-  MITSUBISHI
-  MITSUOKA
-  MOSKVICH
-  MPM
-  MSC
-  MSC_CRUISES
-  NEOTERIC
-  NETA
-  NIEWIADOW
-  NIO
-  NISSAN
-  NORWEGIAN_CRUISE
-  OLDSMOBILE
-  OLD_TOWN
-  OMODA
-  OPEL
   OTHER
-  PARROT
-  PELICAN
-  PERCEPTION
-  PEUGEOT
-  POLESTAR
-  PONTIAC
-  PORSCHE
-  PRINCESS_YACHTS
-  PROTON
-  RENAULT
-  RENAULT_SAMSUNG
-  RIVIAN
-  ROEWE
-  ROLLS_ROYCE
-  ROVER
-  ROYAL_CARIBBEAN
-  SAAB
-  SALEEN
-  SATURN
-  SCHEMPP_HIRTH
-  SCHLEICHER
-  SCION
-  SEAT
-  SEA_DOO
-  SEA_RAY
-  SENA
-  SIKORSKY
-  SKODA
-  SKYWELL
-  SMART
-  SOUEAST
-  SSANGYONG
-  SUBARU
-  SUNSEEKER
-  SUZUKI
+  PETERBILT
+  RAM
+  RENAULT_TRUCKS
+  SCANIA
+  SCHMITZ_CARGOBULL
   TATA
   TESLA
-  TOYOTA
-  UAZ
-  VAUXHALL
-  VAZ
-  VOLKSWAGEN
   VOLVO
-  VOYAH
-  WENONAH
-  WULING
-  XIAOMI
-  XINGTAI
-  XPENG
-  YAMAHA
-  YAMAHA_BOATS
-  YTO
-  YUANXIN_ENERGYS
-  ZAZ
-  ZEEKR
-  ZEPPELIN_NT
-  ZUKIDA
-  ZXAUTO
+  WABASH
 }
 
 enum TransportColor {
@@ -1411,21 +1235,24 @@ enum TransportColor {
 
 type TransportEntity {
   airbags: Int
+  area: Float!
   brand: TransportBrands!
+  brandName: String
+  carryWeight: Float!
   color: TransportColor!
   company: CompanyEntity!
   companyId: String!
   createdAt: DateTime!
   cylinders: Int
   engineSize: Float!
-  features: [TransportFeature!]!
+  fuelConsumption: Float
   fuelType: FuelType!
+  height: Float!
   id: String!
   inspectionValidUntil: DateTime!
   insuranceValidUntil: DateTime
-  interiorColor: TransportColor!
-  interiorMaterial: CarInteriorMaterial!
   isTurbo: Boolean!
+  length: Float!
   licensePlate: String!
   mileage: Float
   model: String!
@@ -1436,80 +1263,15 @@ type TransportEntity {
   steeringWheelSide: SteeringWheelSide!
   transmission: TransmissionType!
   transportFiles: [TransportFilesEntity!]!
-  type: TransportType!
+  type: TransportMode!
   updatedAt: DateTime!
   user: UserEntity
   userId: String
+  vehicleType: VehicleType!
+  volume: Float!
+  weight: Float!
+  width: Float!
   year: Int!
-}
-
-enum TransportFeature {
-  ABS
-  ADAPTIVE_CRUISE_CONTROL
-  ADAPTIVE_SUSPENSION
-  AIR_CONDITIONING
-  ALL_WHEEL_DRIVE
-  AMBIENT_INTERIOR_LIGHTING
-  ANDROID_AUTO
-  ANTI_THEFT_SYSTEM
-  APPLE_CAR_PLAY
-  AUTOMATIC_EMERGENCY_BRAKING
-  BABY_SEAT_AVAILABLE
-  BATTERY_PRECONDITIONING
-  BLIND_SPOT_MONITORING
-  BLUETOOTH
-  CAMERA_360
-  CARGO_ORGANIZER
-  COLLISION_AVOIDANCE_SYSTEM
-  CURTAIN_AIRBAGS
-  DIGITAL_INSTRUMENT_CLUSTER
-  DUAL_ZONE_CLIMATE_CONTROL
-  ECO_MODE
-  EV_FAST_CHARGING
-  EXTRA_LUGGAGE_STORAGE
-  FOLDING_REAR_SEATS
-  FOUR_WHEEL_DRIVE
-  FRONT_AIRBAGS
-  GPS_NAVIGATION
-  HANDS_FREE_TRUNK_ACCESS
-  HEADS_UP_DISPLAY
-  HEATED_SEATS
-  HILL_DESCENT_CONTROL
-  HILL_START_ASSIST
-  INTERIOR_AIR_PURIFIER
-  KEYLESS_ENTRY
-  LANE_DEPARTURE_WARNING
-  LANE_KEEP_ASSIST
-  LEATHER_SEATS
-  MASSAGE_SEATS
-  MEMORY_SEATS
-  MINI_FRIDGE
-  NOISE_INSULATION_PACKAGE
-  OFF_ROAD_PACKAGE
-  PADDLE_SHIFTERS
-  PANORAMIC_ROOF
-  PARKING_SENSORS
-  PET_FRIENDLY_PACKAGE
-  POWER_ADJUSTABLE_SEATS
-  POWER_TAILGATE
-  PREMIUM_SOUND_SYSTEM
-  PUSH_BUTTON_START
-  REARVIEW_CAMERA
-  REAR_ENTERTAINMENT_SYSTEM
-  REAR_WINDOW_SUNSHADES
-  REGENERATIVE_BRAKING
-  REMOTE_START
-  ROOF_RACK
-  SIDE_AIRBAGS
-  SMART_GLASS
-  SOLAR_ROOF
-  SPORT_MODE
-  SUNROOF
-  THIRD_ROW_SEATING
-  USB_PORTS
-  VENTILATED_SEATS
-  WIFI_HOTSPOT
-  WIRELESS_PHONE_CHARGING
 }
 
 type TransportFilesEntity {
@@ -1529,8 +1291,14 @@ input TransportFilesFileIdTransportIdUniqueInputDto {
 input TransportInput {
   airbags: Int
   airbagsList: [Int!]
+  area: Float
+  areaList: [Float!]
   brand: TransportBrands
   brandList: [TransportBrands!]
+  brandName: String
+  brandNameList: [String!]
+  carryWeight: Float
+  carryWeightList: [Float!]
   color: TransportColor
   colorList: [TransportColor!]
   companyId: String
@@ -1540,20 +1308,20 @@ input TransportInput {
   cylindersList: [Int!]
   engineSize: Float
   engineSizeList: [Float!]
-  features: [TransportFeature!]
-  featuresList: [TransportFeature!]
+  fuelConsumption: Float
+  fuelConsumptionList: [Float!]
   fuelType: FuelType
   fuelTypeList: [FuelType!]
+  height: Float
+  heightList: [Float!]
   id: String
   idList: [String!]
   inspectionValidUntil: DateTime
   insuranceValidUntil: DateTime
-  interiorColor: TransportColor
-  interiorColorList: [TransportColor!]
-  interiorMaterial: CarInteriorMaterial
-  interiorMaterialList: [CarInteriorMaterial!]
   isTurbo: Boolean
   isTurboList: [Boolean!]
+  length: Float
+  lengthList: [Float!]
   licensePlate: String
   licensePlateList: [String!]
   mileage: Float
@@ -1574,79 +1342,56 @@ input TransportInput {
   steeringWheelSideList: [SteeringWheelSide!]
   transmission: TransmissionType
   transmissionList: [TransmissionType!]
-  type: TransportType
-  typeList: [TransportType!]
+  type: TransportMode
+  typeList: [TransportMode!]
   userId: String
   userIdList: [String!]
+  vehicleType: VehicleType
+  vehicleTypeList: [VehicleType!]
+  volume: Float
+  volumeList: [Float!]
+  weight: Float
+  weightList: [Float!]
+  width: Float
+  widthList: [Float!]
   year: Int
   yearList: [Int!]
 }
 
-enum TransportType {
-  AIRSHIP
-  ATV
-  BICYCLE
-  BOAT
-  BUS
-  CAMEL_CARAVAN
-  CANOE
-  CONVERTIBLE
-  COUPE
-  DIRT_BIKE
-  DOG_SLED
-  DRONE
-  FERRY
-  GLIDER
-  HATCHBACK
-  HELICOPTER
-  HORSE_CARRIAGE
-  HOT_AIR_BALLOON
-  HOVERCRAFT
-  JET_SKI
-  KAYAK
-  LIMOUSINE
-  MINIVAN
-  MOTORCYCLE
-  OFFROAD
-  OTHER
-  PICKUP
-  PLANE
-  PRIVATE_JET
-  RICKSHAW
-  SCOOTER
-  SEDAN
-  SHIP
-  SKI_LIFT
-  SNOWMOBILE
-  SUBMARINE
-  SUV
-  VAN
-  WAGON
-  YACHT
+enum TransportMode {
+  AIR
+  RAIL
+  ROAD
+  SEA
 }
 
 input UpdateCompanyDto {
   address: String!
-  companyType: BusinessType! = OTHER
+  businessType: BusinessType! = OTHER
+  companyType: CompanyType! = OTHER
   countryId: Int!
   email: String!
+  isPublic: Boolean! = false
   name: String!
   phone: String!
 }
 
 input UpdateContentInput {
-  amenities: [String!]!
+  availableQuantity: Float
+  cargoType: CargoType
   cityId: Int!
   contentType: ContentType!
   countryId: Int!
   description: String
-  details: ContentDetailsInput!
+  details: ContentDetailsInput
   endDate: String
+  hazardClass: HazardClass
+  isPublic: Boolean! = false
   itemId: String!
   langId: Int!
   latitude: Float
   longitude: Float
-  maxSeats: Int! = 0
+  price: Float
   regionId: Int!
   slug: String
   startDate: String
@@ -1719,20 +1464,6 @@ input UpdateOrderDto {
   userId: String!
 }
 
-input UpdatePackageDto {
-  additionalProfit: Float
-  arrivalId: String!
-  contentId: String!
-  departureId: String!
-  driverId: String
-  endDate: String!
-  guideId: String
-  occupancy: Int!
-  priceId: String!
-  startDate: String!
-  status: BookingStatus! = IN_PROGRESS
-}
-
 input UpdatePageDto {
   backgroundId: String
   coverId: String
@@ -1753,20 +1484,44 @@ input UpdatePageDto {
   type: ContentType!
 }
 
+input UpdateShipmentDto {
+  approximateEndDate: String
+  approximateStartDate: String
+  arrivalId: String!
+  currencyId: String!
+  customerId: String
+  departureId: String!
+  driverId: String
+  endDate: String
+  logisticsId: String
+  notes: String
+  paymentMethod: PaymentMethod
+  paymentRef: String
+  serviceType: ServiceType
+  shipmentType: ShipmentType!
+  startDate: String
+  status: ShipmentStatus! = DRAFT
+  supplierId: String
+  userId: String!
+}
+
 input UpdateTransportInput {
   airbags: Int
+  area: Float!
   brand: TransportBrands!
+  brandName: String
+  carryWeight: Float!
   color: TransportColor!
   cylinders: Int
   engineSize: Float!
-  features: [TransportFeature!]!
   fileIds: [FileEntityInput!]! = []
+  fuelConsumption: Float
   fuelType: FuelType!
+  height: Float!
   inspectionValidUntil: String!
   insuranceValidUntil: String
-  interiorColor: TransportColor!
-  interiorMaterial: CarInteriorMaterial! = OTHER
   isTurbo: Boolean! = false
+  length: Float!
   licensePlate: String!
   mileage: Float
   model: String!
@@ -1774,10 +1529,14 @@ input UpdateTransportInput {
   pricePerDay: Float
   pricePerKm: Float
   seats: Int!
-  steeringWheelSide: SteeringWheelSide! = LEFT
+  steeringWheelSide: SteeringWheelSide! = OTHER
   transmission: TransmissionType!
-  type: TransportType!
+  type: TransportMode!
   userId: String
+  vehicleType: VehicleType!
+  volume: Float!
+  weight: Float!
+  width: Float!
   year: Int!
 }
 
@@ -1826,8 +1585,6 @@ type UserEntity {
   backImage: FileEntity
   backImageId: String
   birthday: DateTime!
-  bookingDrivers: [PackageEntity!]!
-  bookingGuides: [PackageEntity!]!
   company: CompanyEntity!
   companyId: String!
   createdAt: DateTime!
@@ -1845,11 +1602,11 @@ type UserEntity {
   licenses: [LicenseEntity!]!
   middleName: String
   orders: [OrderEntity!]!
-  packageReviews: [PackageReviewEntity!]!
-  packages: [PackageEntity!]!
   passportNumber: String
   personalId: String
   role: Role!
+  shipmentDrivers: [ShipmentEntity!]!
+  shipments: [ShipmentEntity!]!
   status: UserStatus!
   statusReason: String
   transports: [TransportEntity!]!
@@ -1863,4 +1620,35 @@ enum UserStatus {
   INACTIVE
   PENDING
   SUSPENDED
+}
+
+enum VehicleType {
+  BARGE
+  BOX_TRUCK
+  BREAKBULK_VESSEL
+  BULK_CARRIER
+  CAR
+  CARGO_FREIGHTER
+  CAR_CARRIER
+  CHARTER_PLANE
+  CONTAINER_CARRIER
+  CONTAINER_SHIP
+  DRONE
+  DUMP_TRUCK
+  FLATBED_TRUCK
+  FREIGHT_TRAIN_BOXCAR
+  FREIGHT_TRAIN_CONTAINER
+  FREIGHT_TRAIN_HOPPER
+  FREIGHT_TRAIN_TANKER
+  MOTORCYCLE
+  PASSENGER_AIRCRAFT_BELLY
+  PICKUP_TRUCK
+  REFRIGERATED_TRUCK
+  RORO_VESSEL
+  SEMI_TRAILER_DRY
+  SEMI_TRAILER_FLATBED
+  SEMI_TRAILER_REEFER
+  TANKER_TRUCK
+  TANKER_VESSEL
+  VAN
 }

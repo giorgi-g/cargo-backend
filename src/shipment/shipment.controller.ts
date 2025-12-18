@@ -22,7 +22,12 @@ import { CurrentUser } from "../users/decorators/user.decorator";
 import { CurrentUserDto } from "../users/dtos";
 import { ShipmentService } from "./shipment.service";
 import { Roles } from "../authorization/roles/decorators";
-import { FilterShipmentDto } from "./dtos";
+import {
+    FilterShipmentDto,
+    AddShipmentGoodsDto,
+    UpdateShipmentGoodsDto,
+    RemoveShipmentGoodsDto,
+} from "./dtos";
 
 @Controller("shipments")
 export class ShipmentController {
@@ -144,5 +149,144 @@ export class ShipmentController {
     @Delete("/shipment/:id")
     remove(@Param("id") id: string, @CurrentUser() user: CurrentUserDto) {
         return this.shipmentService.remove(id, user);
+    }
+
+    // ==================== ShipmentGoods Management ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+        RoleEnum.ACCOUNTANT,
+        RoleEnum.DRIVER,
+    )
+    @Get("/shipment/:id/goods")
+    getShipmentGoods(
+        @Param("id") id: string,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.getShipmentGoods(id, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Post("/shipment/:id/goods")
+    addGoods(
+        @Param("id") id: string,
+        @Body() goods: AddShipmentGoodsDto[],
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.addGoods(id, goods, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Put("/shipment/:id/goods")
+    updateGoods(
+        @Param("id") id: string,
+        @Body() data: UpdateShipmentGoodsDto,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.updateGoods(id, data, user);
+    }
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Delete("/shipment/:id/goods")
+    removeGoods(
+        @Param("id") id: string,
+        @Body() data: RemoveShipmentGoodsDto,
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.removeGoods(id, data, user);
+    }
+
+    // ==================== Driver Assignment ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+    )
+    @Put("/shipment/:id/driver")
+    assignDriver(
+        @Param("id") id: string,
+        @Body() body: { driverId: string | null },
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.assignDriver(id, body.driverId, user);
+    }
+
+    // ==================== Status Management ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Put("/shipment/:id/status")
+    updateStatus(
+        @Param("id") id: string,
+        @Body() body: { status: ShipmentStatusEnum },
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.updateStatus(id, body.status, user);
+    }
+
+    // ==================== Company Participants ====================
+
+    @Roles(
+        RoleEnum.ROOT,
+        RoleEnum.ADMIN,
+        RoleEnum.GENERAL_MANAGER,
+        RoleEnum.DIRECTOR,
+        RoleEnum.LOGISTIC_MANAGER,
+        RoleEnum.DELIVERY_MANAGER,
+        RoleEnum.SALES_MANAGER,
+    )
+    @Put("/shipment/:id/participants")
+    assignParticipants(
+        @Param("id") id: string,
+        @Body()
+        body: {
+            customerId?: string | null;
+            supplierId?: string | null;
+            logisticsId?: string | null;
+        },
+        @CurrentUser() user: CurrentUserDto,
+    ) {
+        return this.shipmentService.assignParticipants(id, body, user);
     }
 }
