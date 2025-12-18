@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-    OnModuleDestroy,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
     CreateOrderDto,
@@ -20,12 +16,8 @@ import {
 } from "./dtos";
 
 @Injectable()
-export class OrderService implements OnModuleDestroy {
+export class OrderService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     private readonly includeRelations = {
         user: true,

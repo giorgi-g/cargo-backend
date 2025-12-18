@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { ContentEntity } from "@generated";
 import { CurrentUserDto } from "../users/dtos";
@@ -12,12 +12,8 @@ import {
 import { ContentType } from "src/prisma-client";
 
 @Injectable()
-export class ContentService implements OnModuleDestroy {
+export class ContentService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     // Create content
     async create(

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
     CreateLanguageDto,
@@ -8,12 +8,9 @@ import {
 import { languages } from "../commands/seeds";
 
 @Injectable()
-export class LanguageService implements OnModuleDestroy {
+export class LanguageService {
     constructor(private readonly prisma: PrismaService) {}
 
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
     async create(data: CreateLanguageDto): Promise<LanguageEntity> {
         return this.prisma.language.create({
             data: {

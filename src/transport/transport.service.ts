@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-    OnModuleDestroy,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { TransportEntity, TransportResponse } from "@generated";
 import {
@@ -15,15 +11,11 @@ import { convertBigIntegers } from "@utils";
 import { CurrentUserDto } from "../users/dtos";
 
 @Injectable()
-export class TransportService implements OnModuleDestroy {
+export class TransportService {
     constructor(
         private readonly transportFilesService: TransportFilesService,
         private readonly prisma: PrismaService,
     ) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     private readonly includeRelations = {
         user: true,

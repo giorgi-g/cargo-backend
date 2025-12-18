@@ -366,6 +366,7 @@ model Company {
   shipmentsAsLogistics Shipment[]            @relation("ShipmentLogistics")
   companySubscriptions CompanySubscription[]
   orders               Order[]
+  notifications        Notification[]
 }
 
 model User {
@@ -414,8 +415,9 @@ model User {
   licenses        License[]
   files           File[]
   shipments       Shipment[]
-  shipmentDrivers Shipment[]  @relation("ShipmentDriver")
+  shipmentDrivers Shipment[]     @relation("ShipmentDriver")
   orders          Order[]
+  notifications   Notification[]
 
   @@unique([email, status])
   @@index([id])
@@ -500,6 +502,7 @@ model Transport {
   transportFiles TransportFiles[]
 
   @@index([companyId])
+  @@index([userId])
 }
 
 model TransportFiles {
@@ -540,6 +543,8 @@ model License {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Shipment {
@@ -599,6 +604,7 @@ model Shipment {
   total        Float        @default(0)
   shipmentType ShipmentType
   serviceType  ServiceType?
+  incoterm     Incoterm? // International trade terms (EXW, FOB, CIF, DDP, etc.)
 
   // status & payment
   status        ShipmentStatus @default(DRAFT)
@@ -820,6 +826,57 @@ model CompanySubscription {
   @@index([interval])
   @@index([status])
   @@index([currentPeriodEnd])
+}
+
+model Notification {
+  /// @DtoCreateHidden
+  id          String             @id @unique @default(dbgenerated("CONCAT('NOTIF-', gen_random_uuid())"))
+  /// @DtoRelationIncludeId
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  companyId   String
+  company     Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  /// @DtoRelationIncludeId
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationType
+  title       String
+  message     String             @db.Text
+  data        Json               @default("{}") @db.JsonB
+
+  // Reference to related entity (polymorphic)
+  refType     String? // e.g., "SHIPMENT", "ORDER", "INVOICE"
+  refId       String? // e.g., "SHIPMENT-uuid"
+
+  isRead      Boolean            @default(false)
+  readAt      DateTime?
+
+  /// @DtoCreateHidden
+  /// @DtoUpdateHidden
+  createdAt   DateTime           @default(now())
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([refType, refId])
+}
+
+enum NotificationType {
+  SHIPMENT_STATUS_CHANGED
+  ORDER_STATUS_CHANGED
+  INVOICE_CREATED
+  INVOICE_PAID
+  INVOICE_OVERDUE
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  DRIVER_ASSIGNED
+  DELIVERY_COMPLETED
+  SYSTEM_ALERT
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_RENEWED
 }
 
 enum BillingInterval {

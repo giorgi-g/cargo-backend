@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    NotFoundException,
-    OnModuleDestroy,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
     CreateLicenseDto,
@@ -14,12 +10,8 @@ import { CurrentUserDto } from "../users/dtos";
 import { FilterLicenseDto } from "./types";
 
 @Injectable()
-export class LicenseService implements OnModuleDestroy {
+export class LicenseService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     private readonly includeRelations = {
         file: true,

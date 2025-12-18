@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CurrencyEntity, UpdateCurrencyDto } from "@generated";
 import { CurrentUserDto } from "../users/dtos";
@@ -6,12 +6,8 @@ import { currencies } from "../commands/seeds";
 import { CreateCurrencyInput } from "./dtos/create-currency.input";
 
 @Injectable()
-export class CurrencyService implements OnModuleDestroy {
+export class CurrencyService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     async create(
         data: CreateCurrencyInput,

@@ -1,15 +1,11 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateFolderDto, FolderEntity, UpdateFolderDto } from "@generated";
 import { CurrentUserDto } from "../users/dtos";
 
 @Injectable()
-export class FolderService implements OnModuleDestroy {
+export class FolderService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     async create(
         data: CreateFolderDto,

@@ -31,6 +31,7 @@ import { LicenseModule } from "./license/license.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { OrderModule } from "./order/order.module";
 import { ShipmentModule } from "./shipment/shipment.module";
+import { NotificationModule } from "./notification/notification.module";
 
 @Module({
     imports: [
@@ -87,6 +88,7 @@ import { ShipmentModule } from "./shipment/shipment.module";
         CommandsModule,
         DashboardModule,
         ShipmentModule,
+        NotificationModule,
     ],
     providers: [
         // {

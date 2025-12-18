@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
     MembershipPlanEntity,
@@ -8,12 +8,8 @@ import {
 import { subscriptions } from "../commands/seeds";
 
 @Injectable()
-export class MembershipService implements OnModuleDestroy {
+export class MembershipService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     async create(
         data: CreateMembershipPlanDto,

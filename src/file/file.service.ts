@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
     CreateFileDto,
@@ -13,7 +13,7 @@ import { InjectS3, S3 } from "nestjs-s3";
 import { getFileType, pagination, slug } from "@utils";
 
 @Injectable()
-export class FileService implements OnModuleDestroy {
+export class FileService {
     private readonly bucketName: string;
     private readonly region: string;
 
@@ -24,10 +24,6 @@ export class FileService implements OnModuleDestroy {
     ) {
         this.bucketName = this.configService.get("S3_BUCKET_NAME");
         this.region = this.configService.get("S3_BUCKET_REGION");
-    }
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
     }
 
     async findByIdIn(ids: string[]): Promise<FileEntity[]> {

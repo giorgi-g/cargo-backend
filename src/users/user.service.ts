@@ -1,8 +1,4 @@
-import {
-    BadRequestException,
-    Injectable,
-    OnModuleDestroy,
-} from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { compareSync, genSaltSync, hashSync } from "bcrypt";
 import { RoleEnum, UserEntity, UserStatusEnum } from "@generated";
@@ -15,12 +11,9 @@ import {
 import { GetUsersInput } from "./dtos";
 
 @Injectable()
-export class UserService implements OnModuleDestroy {
+export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
     private hashPassword(password: string): string {
         return hashSync(password, genSaltSync(10));
     }

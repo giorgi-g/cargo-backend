@@ -2,7 +2,6 @@ import {
     BadRequestException,
     Injectable,
     NotFoundException,
-    OnModuleDestroy,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
@@ -15,12 +14,8 @@ import { CurrentUserDto } from "../users/dtos";
 import { FilterCompanyDto } from "./dtos";
 
 @Injectable()
-export class CompanyService implements OnModuleDestroy {
+export class CompanyService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     async create(
         data: CreateCompanyDto,

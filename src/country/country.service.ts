@@ -1,15 +1,11 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CountryEntity, CreateCountryDto, UpdateCountryDto } from "@generated";
 import { countries } from "../commands/seeds";
 
 @Injectable()
-export class CountryService implements OnModuleDestroy {
+export class CountryService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     async create(data: CreateCountryDto): Promise<CountryEntity> {
         return this.prisma.country.create({

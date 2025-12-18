@@ -1,15 +1,11 @@
-import { Injectable, OnModuleDestroy } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreatePageDto, PageEntity, UpdatePageDto } from "@generated";
 import { CurrentUserDto } from "../users/dtos";
 
 @Injectable()
-export class PageService implements OnModuleDestroy {
+export class PageService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     async create(
         data: CreatePageDto,

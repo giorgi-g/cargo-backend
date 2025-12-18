@@ -2,7 +2,6 @@ import {
     Injectable,
     NotFoundException,
     BadRequestException,
-    OnModuleDestroy,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
@@ -21,12 +20,8 @@ import {
 } from "./dtos";
 
 @Injectable()
-export class ShipmentService implements OnModuleDestroy {
+export class ShipmentService {
     constructor(private readonly prisma: PrismaService) {}
-
-    onModuleDestroy() {
-        this.prisma.$disconnect();
-    }
 
     private readonly includeRelations = {
         user: true,
